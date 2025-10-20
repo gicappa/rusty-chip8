@@ -6,7 +6,6 @@ pub(crate) const WIDTH: usize = 64;
 pub(crate) const HEIGHT: usize = 32;
 pub(crate) const START_ADDRESS: usize = 0x200;
 
-
 pub struct Chip8 {
     memory: [u8; MEMORY_SIZE],
     v: [u8; 16],
@@ -73,9 +72,20 @@ mod tests {
     use super::*;
 
     #[test]
+    fn load_rom_test() {
+        let mut chip = Chip8::new();
+
+        chip.load_rom("tests/fixtures/test_opcode.ch8")
+            .expect("Error loading fixture files");
+
+        assert!(chip.memory[START_ADDRESS..]
+            .starts_with(&[0x12, 0x4e, 0xea, 0xac, 0xaa, 0xea, 0xce, 0xaa]));
+    }
+
+    #[test]
     fn new_initializes_state() {
         let chip = Chip8::new();
-        
+
         assert_eq!(chip.pc, START_ADDRESS as u16);
         assert!(chip.memory.iter().all(|&b| b == 0));
         assert!(chip.v.iter().all(|&r| r == 0));
