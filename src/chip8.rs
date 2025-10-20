@@ -1,5 +1,5 @@
-use std::{fs, io};
 use std::process::exit;
+use std::{fs, io};
 
 pub(crate) const MEMORY_SIZE: usize = 4096;
 pub(crate) const WIDTH: usize = 64;
@@ -65,5 +65,23 @@ impl Chip8 {
         }
 
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn new_initializes_state() {
+        let chip = Chip8::new();
+        
+        assert_eq!(chip.pc, START_ADDRESS as u16);
+        assert!(chip.memory.iter().all(|&b| b == 0));
+        assert!(chip.v.iter().all(|&r| r == 0));
+        assert_eq!(chip.i, 0);
+        assert_eq!(chip.sp, 0);
+        assert!(chip.stack.iter().all(|&s| s == 0));
+        assert!(chip.display.iter().all(|&p| p == 0));
     }
 }
