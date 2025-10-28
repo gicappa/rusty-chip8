@@ -8,6 +8,7 @@ impl Chip8 {
             code if code & 0xf00f == 0x8002 => self.op_8xy2(opcode),
             code if code & 0xf00f == 0x8003 => self.op_8xy3(opcode),
             code if code & 0xf00f == 0x8004 => self.op_8xy4(opcode),
+            code if code & 0xf00f == 0x8005 => self.op_8xy5(opcode),
             _ => println!("Not matching"),
         }
     }
@@ -64,6 +65,22 @@ impl Chip8 {
         let (sum, carry) = self.v[x].overflowing_add(self.v[y]);
         self.v[x] = sum;
         self.v[0xF] = if carry { 1 } else { 0 }
+    }
+    /// 8xy5 - SUB Vx, Vy
+    /// Set Vx = Vx - Vy, set VF = NOT borrow.
+    /// If Vx > Vy, then VF is set to 1, otherwise 0. Then Vy is subtracted from Vx, and the results
+    /// stored in Vx.
+    fn op_8xy5(&mut self, opcode: u16) {
+        let (x, y) = Self::regs_xy(opcode);
+
+        let (diff, carry) = self.v[x].overflowing_sub(self.v[y]);
+        if carry {
+            self.v[x] = self.v[y] - self.v[x];
+            self.v[0xF] = 0;
+        } else {
+            self.v[x] = diff;
+            self.v[0xF] = 1;
+        }
     }
 
     // Helper //////////////////////////////////////////////////////////////////
@@ -142,18 +159,29 @@ mod tests {
         assert_eq!(chip.v[5], 0x03);
         assert_eq!(chip.v[15], 0x1);
     }
+
+    #[test]
+    fn decode_op_test_8xy5_with_carry() {
+        let mut chip = Chip8::new();
+        chip.v[5] = 0x5F;
+        chip.v[6] = 0x14;
+        chip.decode_op(0x8565);
+        assert_eq!(chip.v[5], 0x4B);
+        assert_eq!(chip.v[15], 0x1);
+    }
+
+    #[test]
+    fn decode_op_test_8xy5_no_carry() {
+        let mut chip = Chip8::new();
+        chip.v[5] = 0x14;
+        chip.v[6] = 0x5F;
+        chip.decode_op(0x8565);
+        assert_eq!(chip.v[5], 0x4B);
+        assert_eq!(chip.v[15], 0x0);
+    }
 }
 
 /*
-
-
-
-8xy5 - SUB Vx, Vy
-Set Vx = Vx - Vy, set VF = NOT borrow.
-
-If Vx > Vy, then VF is set to 1, otherwise 0. Then Vy is subtracted from Vx, and the results stored in Vx.
-
-
 8xy6 - SHR Vx {, Vy}
 Set Vx = Vx SHR 1.
 
