@@ -6,18 +6,9 @@ impl Chip8 {
             code if code & 0xf00f == 0x8000 => self.op_8xy0(opcode),
             code if code & 0xf00f == 0x8001 => self.op_8xy1(opcode),
             code if code & 0xf00f == 0x8002 => self.op_8xy2(opcode),
+            code if code & 0xf00f == 0x8003 => self.op_8xy3(opcode),
             _ => println!("Not matching"),
         }
-    }
-
-    // Helper //////////////////////////////////////////////////////////////////
-    #[inline]
-    fn regs_xy(opcode: u16) -> (usize, usize) {
-        // Original form: (opcode & 0x0F00) >> 8; (opcode & 0x00F0) >> 4
-        // Equivalent: (opcode >> 8) & 0xF; (opcode >> 4) & 0xF
-        let x = ((opcode >> 8) & 0xF) as usize;
-        let y = ((opcode >> 4) & 0xF) as usize;
-        (x, y)
     }
 
     // Operations //////////////////////////////////////////////////////////////
@@ -42,12 +33,36 @@ impl Chip8 {
 
     /// 8xy2 - AND Vx, Vy
     /// Set Vx = Vx AND Vy.
-    /// Performs a bitwise AND on the values of Vx and Vy, then stores the result in Vx. A bitwise AND compares the corrseponding bits from two values, and if both bits are 1, then the same bit in the result is also 1. Otherwise, it is 0.
+    /// Performs a bitwise AND on the values of Vx and Vy, then stores the result in Vx.
+    /// A bitwise AND compares the corresponding bits from two values, and if both bits are 1,
+    /// then the same bit in the result is also 1. Otherwise, it is 0.
     fn op_8xy2(&mut self, opcode: u16) {
         let (x, y) = Self::regs_xy(opcode);
 
         self.v[x] &= self.v[y];
     }
+
+    /// 8xy3 - XOR Vx, Vy
+    /// Set Vx = Vx XOR Vy.
+    /// Performs a bitwise exclusive OR on the values of Vx and Vy, then stores the result in Vx.
+    /// An exclusive OR compares the corresponding bits from two values, and if the bits are not
+    /// both the same, then the corresponding bit in the result is set to 1. Otherwise, it is 0.
+    fn op_8xy3(&mut self, opcode: u16) {
+        let (x, y) = Self::regs_xy(opcode);
+
+        self.v[x] ^= self.v[y]
+    }
+
+    // Helper //////////////////////////////////////////////////////////////////
+    #[inline]
+    fn regs_xy(opcode: u16) -> (usize, usize) {
+        // Original form: (opcode & 0x0F00) >> 8; (opcode & 0x00F0) >> 4
+        // Equivalent: (opcode >> 8) & 0xF; (opcode >> 4) & 0xF
+        let x = ((opcode >> 8) & 0xF) as usize;
+        let y = ((opcode >> 4) & 0xF) as usize;
+        (x, y)
+    }
+
 }
 
 #[cfg(test)]
@@ -88,20 +103,17 @@ mod tests {
         chip.decode_op(0x8232);
         assert_eq!(chip.v[2], 0x40);
     }
+    #[test]
+    fn decode_op_test_8xy3() {
+        let mut chip = Chip8::new();
+        chip.v[5] = 0xE8;
+        chip.v[6] = 0x56;
+        chip.decode_op(0x8563);
+        assert_eq!(chip.v[5], 0xBE);
+    }
 }
 
 /*
-
-
-
-
-
-
-8xy3 - XOR Vx, Vy
-Set Vx = Vx XOR Vy.
-
-Performs a bitwise exclusive OR on the values of Vx and Vy, then stores the result in Vx. An exclusive OR compares the corrseponding bits from two values, and if the bits are not both the same, then the corresponding bit in the result is set to 1. Otherwise, it is 0.
-
 
 8xy4 - ADD Vx, Vy
 Set Vx = Vx + Vy, set VF = carry.
