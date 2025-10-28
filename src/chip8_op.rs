@@ -7,6 +7,7 @@ impl Chip8 {
             code if code & 0xf00f == 0x8001 => self.op_8xy1(opcode),
             code if code & 0xf00f == 0x8002 => self.op_8xy2(opcode),
             code if code & 0xf00f == 0x8003 => self.op_8xy3(opcode),
+            code if code & 0xf00f == 0x8004 => self.op_8xy4(opcode),
             _ => println!("Not matching"),
         }
     }
@@ -53,6 +54,18 @@ impl Chip8 {
         self.v[x] ^= self.v[y]
     }
 
+    /// 8xy4 - ADD Vx, Vy
+    /// Set Vx = Vx + Vy, set VF = carry.
+    /// The values of Vx and Vy are added together. If the result is greater than 8 bits (i.e., > 255)
+    /// VF is set to 1, otherwise 0. Only the lowest 8 bits of the result are kept, and stored in Vx.
+    fn op_8xy4(&mut self, opcode: u16) {
+        let (x, y) = Self::regs_xy(opcode);
+
+        let (sum, carry) = self.v[x].overflowing_add(self.v[y]);
+        self.v[x] = sum;
+        self.v[0xF] = if carry { 1 } else { 0 }
+    }
+
     // Helper //////////////////////////////////////////////////////////////////
     #[inline]
     fn regs_xy(opcode: u16) -> (usize, usize) {
@@ -62,7 +75,6 @@ impl Chip8 {
         let y = ((opcode >> 4) & 0xF) as usize;
         (x, y)
     }
-
 }
 
 #[cfg(test)]
@@ -111,14 +123,29 @@ mod tests {
         chip.decode_op(0x8563);
         assert_eq!(chip.v[5], 0xBE);
     }
+    #[test]
+    fn decode_op_test_8xy4_no_carry() {
+        let mut chip = Chip8::new();
+        chip.v[5] = 0x08;
+        chip.v[6] = 0x56;
+        chip.decode_op(0x8564);
+        assert_eq!(chip.v[5], 0x5E);
+        assert_eq!(chip.v[15], 0x0);
+    }
+
+    #[test]
+    fn decode_op_test_8xy4_with_carry() {
+        let mut chip = Chip8::new();
+        chip.v[5] = 0xFF;
+        chip.v[6] = 0x04;
+        chip.decode_op(0x8564);
+        assert_eq!(chip.v[5], 0x03);
+        assert_eq!(chip.v[15], 0x1);
+    }
 }
 
 /*
 
-8xy4 - ADD Vx, Vy
-Set Vx = Vx + Vy, set VF = carry.
-
-The values of Vx and Vy are added together. If the result is greater than 8 bits (i.e., > 255,) VF is set to 1, otherwise 0. Only the lowest 8 bits of the result are kept, and stored in Vx.
 
 
 8xy5 - SUB Vx, Vy
