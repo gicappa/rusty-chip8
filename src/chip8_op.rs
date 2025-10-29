@@ -2,16 +2,16 @@ use crate::chip8::Chip8;
 
 impl Chip8 {
     pub fn decode_op(&mut self, opcode: u16) {
-        match opcode {
-            code if code & 0xf00f == 0x8000 => self.op_8xy0(opcode),
-            code if code & 0xf00f == 0x8001 => self.op_8xy1(opcode),
-            code if code & 0xf00f == 0x8002 => self.op_8xy2(opcode),
-            code if code & 0xf00f == 0x8003 => self.op_8xy3(opcode),
-            code if code & 0xf00f == 0x8004 => self.op_8xy4(opcode),
-            code if code & 0xf00f == 0x8005 => self.op_8xy5(opcode),
-            code if code & 0xf00f == 0x8006 => self.op_8xy6(opcode),
-            code if code & 0xf00f == 0x8007 => self.op_8xy7(opcode),
-            code if code & 0xf00f == 0x8008 => self.op_8xy8(opcode),
+        match opcode & 0xf00f {
+            0x8000 => self.op_8xy0(opcode),
+            0x8001 => self.op_8xy1(opcode),
+            0x8002 => self.op_8xy2(opcode),
+            0x8003 => self.op_8xy3(opcode),
+            0x8004 => self.op_8xy4(opcode),
+            0x8005 => self.op_8xy5(opcode),
+            0x8006 => self.op_8xy6(opcode),
+            0x8007 => self.op_8xy7(opcode),
+            0x8008 => self.op_8xy8(opcode),
             _ => println!("Not matching"),
         }
     }
@@ -132,7 +132,6 @@ impl Chip8 {
         self.v[x] = self.v[x] << 1;
         self.v[y] = self.v[x];
         self.v[0xF] = (self.v[x] & 0x8) >> 3;
-
     }
 
     // Helper //////////////////////////////////////////////////////////////////
