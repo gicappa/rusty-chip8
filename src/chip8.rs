@@ -125,6 +125,9 @@ impl Chip8 {
             // 0x3xkk - Skip if Vx != kk
             0x4000..=0x4FFF => self.op_4xkk(opcode),
 
+            // 0x3xkk - Skip if Vx != kk
+            code if code & 0xF00F == 0x5000 => self.op_5xy0(opcode),
+
             // 0x8xy0-0x8xyE - Arithmetic/logic operations
             code => match code & 0xF00F {
                 0x8000 => self.op_8xy0(opcode),

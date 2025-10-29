@@ -49,6 +49,18 @@ impl Chip8 {
         }
     }
 
+    /// 5xy0 - SE Vx, Vy
+    /// Skip next instruction if Vx = Vy.
+    /// The interpreter compares register Vx to register Vy, and if they are equal,
+    /// increments the program counter by 2.
+    pub(super) fn op_5xy0(&mut self, opcode: u16) {
+        let x = ((opcode & 0x0f00) >> 8) as usize;
+        let y = ((opcode & 0x00f0) >> 8) as usize;
+
+        if self.v[x] == self.v[y] {
+            self.pc += 2
+        }
+    }
 }
 
 #[cfg(test)]
@@ -111,5 +123,27 @@ mod tests {
         chip.decode_op(0x4403);
 
         assert_eq!(chip.pc, 0x302);
+    }
+    #[test]
+    fn decode_op_test_op_5xy0_x_equals_kk() {
+        let mut chip = Chip8::new();
+        chip.pc = 0x300;
+        chip.v[4] = 0x05;
+        chip.v[0] = 0x05
+        ;
+        chip.decode_op(0x5400);
+
+        assert_eq!(chip.pc, 0x302);
+    }
+    #[test]
+    fn decode_op_test_op_5xy0_x_not_equals_kk() {
+        let mut chip = Chip8::new();
+        chip.pc = 0x300;
+        chip.v[4] = 0x05;
+        chip.v[0] = 0x03;
+
+        chip.decode_op(0x5400);
+
+        assert_eq!(chip.pc, 0x300);
     }
 }
