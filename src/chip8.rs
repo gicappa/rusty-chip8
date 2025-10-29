@@ -115,8 +115,13 @@ impl Chip8 {
         match opcode {
             // 0x1nnn - Jump
             0x1000..=0x1FFF => self.op_1nnn(opcode),
+
+            // 0x2nnn - Call subroutine
             0x2000..=0x2FFF => self.op_2nnn(opcode),
 
+            // 0x3xkk - Skip if Vx == kk
+            0x3000..=0x3FFF => self.op_3xkk(opcode),
+            
             // 0x8xy0-0x8xyE - Arithmetic/logic operations
             code => match code & 0xF00F {
                 0x8000 => self.op_8xy0(opcode),
