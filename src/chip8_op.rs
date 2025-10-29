@@ -11,6 +11,7 @@ impl Chip8 {
             code if code & 0xf00f == 0x8005 => self.op_8xy5(opcode),
             code if code & 0xf00f == 0x8006 => self.op_8xy6(opcode),
             code if code & 0xf00f == 0x8007 => self.op_8xy7(opcode),
+            code if code & 0xf00f == 0x8008 => self.op_8xy8(opcode),
             _ => println!("Not matching"),
         }
     }
@@ -92,6 +93,7 @@ impl Chip8 {
     /// Then Vx is divided by 2.
     ///
     /// Actual implementation Vx=Vy=Vy>>1
+    /// If the least-significant bit of Vx is 1, then VF is set to 1, otherwise 0.
     fn op_8xy6(&mut self, opcode: u16) {
         let (x, y) = Self::regs_xy(opcode);
 
@@ -115,6 +117,22 @@ impl Chip8 {
             self.v[x] = diff;
             self.v[0xF] = 1;
         }
+    }
+
+    /// 8xyE - SHL Vx {, Vy}
+    /// Set Vx = Vx SHL 1.
+    /// If the most-significant bit of Vx is 1, then VF is set to 1, otherwise to 0.
+    /// Then Vx is multiplied by 2.
+    ///
+    /// Actual implementation Vx=Vy=Vy<<1
+    /// If the least-significant bit of Vx is 1, then VF is set to 1, otherwise 0.
+    fn op_8xy8(&mut self, opcode: u16) {
+        let (x, y) = Self::regs_xy(opcode);
+
+        self.v[x] = self.v[x] << 1;
+        self.v[y] = self.v[x];
+        self.v[0xF] = (self.v[x] & 0x8) >> 3;
+
     }
 
     // Helper //////////////////////////////////////////////////////////////////
@@ -255,13 +273,26 @@ mod tests {
         assert_eq!(chip.v[5], 0x4B);
         assert_eq!(chip.v[15], 0x0);
     }
+
+    #[test]
+    fn decode_op_test_8xy8_lsb_0() {
+        let mut chip = Chip8::new();
+        chip.v[5] = 0x81;
+        chip.v[6] = 0x5F;
+        chip.decode_op(0x8568);
+        assert_eq!(chip.v[5], 0x02);
+        assert_eq!(chip.v[6], 0x02);
+        assert_eq!(chip.v[0xF], 0);
+    }
+
+    #[test]
+    fn decode_op_test_8xy8_lsb_1() {
+        let mut chip = Chip8::new();
+        chip.v[5] = 0x77;
+        chip.v[6] = 0x5F;
+        chip.decode_op(0x8568);
+        assert_eq!(chip.v[5], 0xEE);
+        assert_eq!(chip.v[6], 0xEE);
+        assert_eq!(chip.v[0xF], 1);
+    }
 }
-
-/*
-8xyE - SHL Vx {, Vy}
-Set Vx = Vx SHL 1.
-
-If the most-significant bit of Vx is 1, then VF is set to 1, otherwise to 0. Then Vx is multiplied by 2.
-
-
- */
