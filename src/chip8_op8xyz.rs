@@ -121,7 +121,7 @@ impl Chip8 {
 
     // Helper //////////////////////////////////////////////////////////////////
     #[inline]
-    fn regs_xy(opcode: u16) -> (usize, usize) {
+    pub(super) fn regs_xy(opcode: u16) -> (usize, usize) {
         // Original form: (opcode & 0x0F00) >> 8; (opcode & 0x00F0) >> 4
         // Equivalent: (opcode >> 8) & 0xF; (opcode >> 4) & 0xF
         let x = ((opcode >> 8) & 0xF) as usize;

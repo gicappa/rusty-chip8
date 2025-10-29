@@ -12,7 +12,7 @@ pub struct Chip8 {
     pub i: u16,
     pub pc: u16,
     pub sp: u8,
-    pub stack: [u16; 16],
+    pub stack: Vec<u16>,
     pub delay_timer: u8,
     pub sound_timer: u8,
     // pub keypad: [u8; 16],
@@ -30,7 +30,7 @@ impl Chip8 {
             i: 0,
             pc: 0x200,
             sp: 0,
-            stack: [0; 16],
+            stack: Vec::new(),
             delay_timer: 0,
             sound_timer: 0,
             // keypad: [0; 16],
@@ -75,18 +75,61 @@ impl Chip8 {
         hi << 8 | lo
     }
 
+    /// Chip 8 - Instruction set
+    ///            00E0 - CLS
+    ///            00EE - RET
+    ///            0nnn - SYS addr
+    ///            1nnn - JP addr
+    ///            2nnn - CALL addr
+    ///            3xkk - SE Vx, byte
+    ///            4xkk - SNE Vx, byte
+    ///            5xy0 - SE Vx, Vy
+    ///            6xkk - LD Vx, byte
+    ///            7xkk - ADD Vx, byte
+    ///            8xy0 - LD Vx, Vy
+    ///            8xy1 - OR Vx, Vy
+    ///            8xy2 - AND Vx, Vy
+    ///            8xy3 - XOR Vx, Vy
+    ///            8xy4 - ADD Vx, Vy
+    ///            8xy5 - SUB Vx, Vy
+    ///            8xy6 - SHR Vx {, Vy}
+    ///            8xy7 - SUBN Vx, Vy
+    ///            8xyE - SHL Vx {, Vy}
+    ///            9xy0 - SNE Vx, Vy
+    ///            Annn - LD I, addr
+    ///            Bnnn - JP V0, addr
+    ///            Cxkk - RND Vx, byte
+    ///            Dxyn - DRW Vx, Vy, nibble
+    ///            Ex9E - SKP Vx
+    ///            ExA1 - SKNP Vx
+    ///            Fx07 - LD Vx, DT
+    ///            Fx0A - LD Vx, K
+    ///            Fx15 - LD DT, Vx
+    ///            Fx18 - LD ST, Vx
+    ///            Fx1E - ADD I, Vx
+    ///            Fx29 - LD F, Vx
+    ///            Fx33 - LD B, Vx
+    ///            Fx55 - LD [I], Vx
+    ///            Fx65 - LD Vx, [I]
     pub(super) fn decode_op(&mut self, opcode: u16) {
-        match opcode & 0xf00f {
-            0x8000 => self.op_8xy0(opcode),
-            0x8001 => self.op_8xy1(opcode),
-            0x8002 => self.op_8xy2(opcode),
-            0x8003 => self.op_8xy3(opcode),
-            0x8004 => self.op_8xy4(opcode),
-            0x8005 => self.op_8xy5(opcode),
-            0x8006 => self.op_8xy6(opcode),
-            0x8007 => self.op_8xy7(opcode),
-            0x8008 => self.op_8xy8(opcode),
-            _ => println!("Not matching"),
+        match opcode {
+            // 0x1nnn - Jump
+            0x1000..=0x1FFF => self.op_1nnn(opcode),
+            0x2000..=0x2FFF => self.op_2nnn(opcode),
+
+            // 0x8xy0-0x8xyE - Arithmetic/logic operations
+            code => match code & 0xF00F {
+                0x8000 => self.op_8xy0(opcode),
+                0x8001 => self.op_8xy1(opcode),
+                0x8002 => self.op_8xy2(opcode),
+                0x8003 => self.op_8xy3(opcode),
+                0x8004 => self.op_8xy4(opcode),
+                0x8005 => self.op_8xy5(opcode),
+                0x8006 => self.op_8xy6(opcode),
+                0x8007 => self.op_8xy7(opcode),
+                0x8008 => self.op_8xy8(opcode),
+                _ => println!("Not matching"),
+            },
         }
     }
 

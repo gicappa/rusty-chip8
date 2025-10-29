@@ -15,6 +15,7 @@
 
 mod chip8;
 mod chip8_op8xyz;
+mod chip8_op1nnn;
 
 use crate::chip8::Chip8;
 use std::thread::sleep;
