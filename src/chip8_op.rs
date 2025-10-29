@@ -9,6 +9,7 @@ impl Chip8 {
             code if code & 0xf00f == 0x8003 => self.op_8xy3(opcode),
             code if code & 0xf00f == 0x8004 => self.op_8xy4(opcode),
             code if code & 0xf00f == 0x8005 => self.op_8xy5(opcode),
+            code if code & 0xf00f == 0x8006 => self.op_8xy6(opcode),
             _ => println!("Not matching"),
         }
     }
@@ -66,6 +67,7 @@ impl Chip8 {
         self.v[x] = sum;
         self.v[0xF] = if carry { 1 } else { 0 }
     }
+
     /// 8xy5 - SUB Vx, Vy
     /// Set Vx = Vx - Vy, set VF = NOT borrow.
     /// If Vx > Vy, then VF is set to 1, otherwise 0. Then Vy is subtracted from Vx, and the results
@@ -81,6 +83,20 @@ impl Chip8 {
             self.v[x] = diff;
             self.v[0xF] = 1;
         }
+    }
+
+    /// 8xy6 - SHR Vx {, Vy}
+    /// Set Vx = Vx SHR 1.
+    /// If the least-significant bit of Vx is 1, then VF is set to 1, otherwise 0.
+    /// Then Vx is divided by 2.
+    ///
+    /// Actual implementation Vx=Vy=Vy>>1
+    fn op_8xy6(&mut self, opcode: u16) {
+        let (x, y) = Self::regs_xy(opcode);
+
+        self.v[x] = self.v[x] >> 1;
+        self.v[y] = self.v[x];
+        self.v[0xF] = self.v[x] & 0x1;
     }
 
     // Helper //////////////////////////////////////////////////////////////////
@@ -179,15 +195,31 @@ mod tests {
         assert_eq!(chip.v[5], 0x4B);
         assert_eq!(chip.v[15], 0x0);
     }
+
+    #[test]
+    fn decode_op_test_8xy6_lsb_1() {
+        let mut chip = Chip8::new();
+        chip.v[5] = 0xEE;
+        chip.v[6] = 0x5F;
+        chip.decode_op(0x8566);
+        assert_eq!(chip.v[5], 0x77);
+        assert_eq!(chip.v[6], 0x77);
+        assert_eq!(chip.v[0xF], 1);
+    }
+
+    #[test]
+    fn decode_op_test_8xy6_lsb_0() {
+        let mut chip = Chip8::new();
+        chip.v[5] = 0xE0;
+        chip.v[6] = 0x34;
+        chip.decode_op(0x8566);
+        assert_eq!(chip.v[5], 0x70);
+        assert_eq!(chip.v[6], 0x70);
+        assert_eq!(chip.v[0xF], 0);
+    }
 }
 
 /*
-8xy6 - SHR Vx {, Vy}
-Set Vx = Vx SHR 1.
-
-If the least-significant bit of Vx is 1, then VF is set to 1, otherwise 0. Then Vx is divided by 2.
-
-
 8xy7 - SUBN Vx, Vy
 Set Vx = Vy - Vx, set VF = NOT borrow.
 
