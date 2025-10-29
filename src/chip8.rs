@@ -73,7 +73,21 @@ impl Chip8 {
         let lo = memory[_pc + 1] as u16;
 
         hi << 8 | lo
+    }
 
+    pub(super) fn decode_op(&mut self, opcode: u16) {
+        match opcode & 0xf00f {
+            0x8000 => self.op_8xy0(opcode),
+            0x8001 => self.op_8xy1(opcode),
+            0x8002 => self.op_8xy2(opcode),
+            0x8003 => self.op_8xy3(opcode),
+            0x8004 => self.op_8xy4(opcode),
+            0x8005 => self.op_8xy5(opcode),
+            0x8006 => self.op_8xy6(opcode),
+            0x8007 => self.op_8xy7(opcode),
+            0x8008 => self.op_8xy8(opcode),
+            _ => println!("Not matching"),
+        }
     }
 
     pub fn draw_flag(&self) -> bool {

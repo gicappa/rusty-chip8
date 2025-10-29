@@ -14,7 +14,7 @@
 //! - Graceful exit on key press / window close.
 
 mod chip8;
-mod chip8_op;
+mod chip8_op8xyz;
 
 use crate::chip8::Chip8;
 use std::thread::sleep;

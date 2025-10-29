@@ -1,27 +1,12 @@
 use crate::chip8::Chip8;
 
 impl Chip8 {
-    pub fn decode_op(&mut self, opcode: u16) {
-        match opcode & 0xf00f {
-            0x8000 => self.op_8xy0(opcode),
-            0x8001 => self.op_8xy1(opcode),
-            0x8002 => self.op_8xy2(opcode),
-            0x8003 => self.op_8xy3(opcode),
-            0x8004 => self.op_8xy4(opcode),
-            0x8005 => self.op_8xy5(opcode),
-            0x8006 => self.op_8xy6(opcode),
-            0x8007 => self.op_8xy7(opcode),
-            0x8008 => self.op_8xy8(opcode),
-            _ => println!("Not matching"),
-        }
-    }
-
     // Operations //////////////////////////////////////////////////////////////
 
     /// 8xy0 - LD Vx, Vy
     /// Set Vx = Vy.
     /// Stores the value of register Vy in register Vx.
-    fn op_8xy0(&mut self, opcode: u16) {
+    pub(super) fn op_8xy0(&mut self, opcode: u16) {
         let (x, y) = Self::regs_xy(opcode);
 
         self.v[x] = self.v[y];
@@ -30,7 +15,7 @@ impl Chip8 {
     /// 8xy1 - OR Vx, Vy
     /// Set Vx = Vx OR Vy.
     /// Performs a bitwise OR on the values of Vx and Vy, then stores the result in Vx.
-    fn op_8xy1(&mut self, opcode: u16) {
+    pub(super) fn op_8xy1(&mut self, opcode: u16) {
         let (x, y) = Self::regs_xy(opcode);
 
         self.v[x] |= self.v[y];
@@ -41,7 +26,7 @@ impl Chip8 {
     /// Performs a bitwise AND on the values of Vx and Vy, then stores the result in Vx.
     /// A bitwise AND compares the corresponding bits from two values, and if both bits are 1,
     /// then the same bit in the result is also 1. Otherwise, it is 0.
-    fn op_8xy2(&mut self, opcode: u16) {
+    pub(super) fn op_8xy2(&mut self, opcode: u16) {
         let (x, y) = Self::regs_xy(opcode);
 
         self.v[x] &= self.v[y];
@@ -52,7 +37,7 @@ impl Chip8 {
     /// Performs a bitwise exclusive OR on the values of Vx and Vy, then stores the result in Vx.
     /// An exclusive OR compares the corresponding bits from two values, and if the bits are not
     /// both the same, then the corresponding bit in the result is set to 1. Otherwise, it is 0.
-    fn op_8xy3(&mut self, opcode: u16) {
+    pub(super) fn op_8xy3(&mut self, opcode: u16) {
         let (x, y) = Self::regs_xy(opcode);
 
         self.v[x] ^= self.v[y]
@@ -62,7 +47,7 @@ impl Chip8 {
     /// Set Vx = Vx + Vy, set VF = carry.
     /// The values of Vx and Vy are added together. If the result is greater than 8 bits (i.e., > 255)
     /// VF is set to 1, otherwise 0. Only the lowest 8 bits of the result are kept, and stored in Vx.
-    fn op_8xy4(&mut self, opcode: u16) {
+    pub(super) fn op_8xy4(&mut self, opcode: u16) {
         let (x, y) = Self::regs_xy(opcode);
 
         let (sum, carry) = self.v[x].overflowing_add(self.v[y]);
@@ -74,7 +59,7 @@ impl Chip8 {
     /// Set Vx = Vx - Vy, set VF = NOT borrow.
     /// If Vx > Vy, then VF is set to 1, otherwise 0. Then Vy is subtracted from Vx, and the results
     /// stored in Vx.
-    fn op_8xy5(&mut self, opcode: u16) {
+    pub(super) fn op_8xy5(&mut self, opcode: u16) {
         let (x, y) = Self::regs_xy(opcode);
 
         let (diff, carry) = self.v[x].overflowing_sub(self.v[y]);
@@ -94,7 +79,7 @@ impl Chip8 {
     ///
     /// Actual implementation Vx=Vy=Vy>>1
     /// If the least-significant bit of Vx is 1, then VF is set to 1, otherwise 0.
-    fn op_8xy6(&mut self, opcode: u16) {
+    pub(super) fn op_8xy6(&mut self, opcode: u16) {
         let (x, y) = Self::regs_xy(opcode);
 
         self.v[x] = self.v[x] >> 1;
@@ -106,7 +91,7 @@ impl Chip8 {
     /// Set Vx = Vy - Vx, set VF = NOT borrow.
     /// If Vy > Vx, then VF is set to 1, otherwise 0. Then Vx is subtracted from Vy,
     /// and the results stored in Vx.
-    fn op_8xy7(&mut self, opcode: u16) {
+    pub(super) fn op_8xy7(&mut self, opcode: u16) {
         let (x, y) = Self::regs_xy(opcode);
 
         let (diff, carry) = self.v[y].overflowing_sub(self.v[x]);
@@ -126,7 +111,7 @@ impl Chip8 {
     ///
     /// Actual implementation Vx=Vy=Vy<<1
     /// If the least-significant bit of Vx is 1, then VF is set to 1, otherwise 0.
-    fn op_8xy8(&mut self, opcode: u16) {
+    pub(super) fn op_8xy8(&mut self, opcode: u16) {
         let (x, y) = Self::regs_xy(opcode);
 
         self.v[x] = self.v[x] << 1;
