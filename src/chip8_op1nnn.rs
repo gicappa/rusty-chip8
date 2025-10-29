@@ -61,6 +61,15 @@ impl Chip8 {
             self.pc += 2
         }
     }
+    /// 6xkk - LD Vx, byte
+    /// Set Vx = kk.
+    /// The interpreter puts the value kk into register Vx.
+    pub(super) fn op_6xkk(&mut self, opcode: u16) {
+        let x = ((opcode & 0x0f00) >> 8) as usize;
+        let kk = (opcode & 0x00ff) as u8;
+
+        self.v[x] = kk;
+    }
 }
 
 #[cfg(test)]
@@ -125,7 +134,7 @@ mod tests {
         assert_eq!(chip.pc, 0x302);
     }
     #[test]
-    fn decode_op_test_op_5xy0_x_equals_kk() {
+    fn decode_op_test_op_5xy0_vx_equals_vy() {
         let mut chip = Chip8::new();
         chip.pc = 0x300;
         chip.v[4] = 0x05;
@@ -136,7 +145,7 @@ mod tests {
         assert_eq!(chip.pc, 0x302);
     }
     #[test]
-    fn decode_op_test_op_5xy0_x_not_equals_kk() {
+    fn decode_op_test_op_5xy0_vx_not_equals_vy() {
         let mut chip = Chip8::new();
         chip.pc = 0x300;
         chip.v[4] = 0x05;
@@ -146,4 +155,22 @@ mod tests {
 
         assert_eq!(chip.pc, 0x300);
     }
+    #[test]
+    fn decode_op_test_op_6xkk() {
+        let mut chip = Chip8::new();
+        chip.v[4] = 0x05;
+
+        chip.decode_op(0x6483);
+
+        assert_eq!(chip.v[4], 0x83);
+    }
+
+    /*
+
+7xkk - ADD Vx, byte
+Set Vx = Vx + kk.
+
+Adds the value kk to the value of register Vx, then stores the result in Vx.
+
+     */
 }
