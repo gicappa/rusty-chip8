@@ -10,6 +10,7 @@ impl Chip8 {
             code if code & 0xf00f == 0x8004 => self.op_8xy4(opcode),
             code if code & 0xf00f == 0x8005 => self.op_8xy5(opcode),
             code if code & 0xf00f == 0x8006 => self.op_8xy6(opcode),
+            code if code & 0xf00f == 0x8007 => self.op_8xy7(opcode),
             _ => println!("Not matching"),
         }
     }
@@ -97,6 +98,23 @@ impl Chip8 {
         self.v[x] = self.v[x] >> 1;
         self.v[y] = self.v[x];
         self.v[0xF] = self.v[x] & 0x1;
+    }
+
+    /// 8xy7 - SUBN Vx, Vy
+    /// Set Vx = Vy - Vx, set VF = NOT borrow.
+    /// If Vy > Vx, then VF is set to 1, otherwise 0. Then Vx is subtracted from Vy,
+    /// and the results stored in Vx.
+    fn op_8xy7(&mut self, opcode: u16) {
+        let (x, y) = Self::regs_xy(opcode);
+
+        let (diff, carry) = self.v[y].overflowing_sub(self.v[x]);
+        if carry {
+            self.v[x] = self.v[x] - self.v[y];
+            self.v[0xF] = 0;
+        } else {
+            self.v[x] = diff;
+            self.v[0xF] = 1;
+        }
     }
 
     // Helper //////////////////////////////////////////////////////////////////
@@ -217,15 +235,29 @@ mod tests {
         assert_eq!(chip.v[6], 0x70);
         assert_eq!(chip.v[0xF], 0);
     }
+
+    #[test]
+    fn decode_op_test_8xy7_with_carry() {
+        let mut chip = Chip8::new();
+        chip.v[5] = 0x14;
+        chip.v[6] = 0x5F;
+        chip.decode_op(0x8567);
+        assert_eq!(chip.v[5], 0x4B);
+        assert_eq!(chip.v[15], 0x1);
+    }
+
+    #[test]
+    fn decode_op_test_8xy7_no_carry() {
+        let mut chip = Chip8::new();
+        chip.v[5] = 0x5F;
+        chip.v[6] = 0x14;
+        chip.decode_op(0x8567);
+        assert_eq!(chip.v[5], 0x4B);
+        assert_eq!(chip.v[15], 0x0);
+    }
 }
 
 /*
-8xy7 - SUBN Vx, Vy
-Set Vx = Vy - Vx, set VF = NOT borrow.
-
-If Vy > Vx, then VF is set to 1, otherwise 0. Then Vx is subtracted from Vy, and the results stored in Vx.
-
-
 8xyE - SHL Vx {, Vy}
 Set Vx = Vx SHL 1.
 
