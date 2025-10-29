@@ -70,6 +70,16 @@ impl Chip8 {
 
         self.v[x] = kk;
     }
+
+    ///7xkk - ADD Vx, byte
+    // Set Vx = Vx + kk.
+    // Adds the value kk to the value of register Vx, then stores the result in Vx.
+    pub(super) fn op_7xkk(&mut self, opcode: u16) {
+        let x = ((opcode & 0x0f00) >> 8) as usize;
+        let kk = (opcode & 0x00ff) as u8;
+
+        self.v[x] += kk;
+    }
 }
 
 #[cfg(test)]
@@ -164,13 +174,14 @@ mod tests {
 
         assert_eq!(chip.v[4], 0x83);
     }
+    #[test]
+    fn decode_op_test_op_7xkk() {
+        let mut chip = Chip8::new();
+        chip.v[4] = 0x05;
 
-    /*
+        chip.decode_op(0x7483);
 
-7xkk - ADD Vx, byte
-Set Vx = Vx + kk.
+        assert_eq!(chip.v[4], 0x88);
+    }
 
-Adds the value kk to the value of register Vx, then stores the result in Vx.
-
-     */
 }

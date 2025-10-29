@@ -131,6 +131,9 @@ impl Chip8 {
             // 6xkk - Set Vx = kk.
             0x6000..=0x6FFF => self.op_6xkk(opcode),
 
+            // 6xkk - Set Vx = kk.
+            0x7000..=0x7FFF => self.op_7xkk(opcode),
+
             // 0x8xy0-0x8xyE - Arithmetic/logic operations
             code => match code & 0xF00F {
                 0x8000 => self.op_8xy0(opcode),
