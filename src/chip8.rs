@@ -135,6 +135,8 @@ impl Chip8 {
             0x7000..=0x7FFF => self.op_7xkk(opcode),
             // 0x9xy0 - Skip next instruction if Vx != Vy.
             code if code & 0xF00F == 0x9000 => self.op_9xy0(opcode),
+            // 0xAnnn - The value of register I is set to nnn.
+            0xA000..=0xAFFF => self.op_annn(opcode),
             // 0x8xy0-0x8xyE - Arithmetic/logic operations
             code => match code & 0xF00F {
                 // 0x8xy0 - Set Vx = Vy.

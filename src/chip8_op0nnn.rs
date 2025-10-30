@@ -30,9 +30,9 @@ impl Chip8 {
     /// Jump to location nnn.
     /// The interpreter sets the program counter to nnn.
     pub(super) fn op_1nnn(&mut self, opcode: u16) {
-        let location = opcode & 0x0fff;
+        let nnn = opcode & 0x0fff;
 
-        self.pc = location;
+        self.pc = nnn;
     }
 
     /// 2nnn - CALL addr
@@ -40,11 +40,11 @@ impl Chip8 {
     /// The interpreter increments the stack pointer, then puts the current PC on the
     /// top of the stack. The PC is then set to nnn.
     pub(super) fn op_2nnn(&mut self, opcode: u16) {
-        let location = opcode & 0x0fff;
-
+        let nnn = opcode & 0x0fff;
         self.sp += 1;
         self.stack.push(self.pc);
-        self.pc = location;
+
+        self.pc = nnn;
     }
 
     /// 3xkk - SE Vx, byte
