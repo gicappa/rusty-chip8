@@ -157,7 +157,6 @@ impl Chip8 {
                 0x800e => self.op_8xye(opcode),
                 _ => println!("Not matching"),
             },
-
         }
     }
 
