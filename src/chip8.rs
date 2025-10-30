@@ -141,6 +141,12 @@ impl Chip8 {
             0xB000..=0xBFFF => self.op_bnnn(opcode),
             // 0xcxkk - Set Vx = random byte AND kk.
             0xC000..=0xCFFF => self.op_cxkk(opcode),
+            // 0xdxyn - Display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision.
+            0xD000..=0xDFFF => self.op_dxyn(opcode),
+            // 0xex9e - Checks the keyboard
+            code if code & 0xF0FF == 0xE09E => self.op_ex9e(opcode),
+            // 0xexa1 - Checks the keyboard
+            code if code & 0xF0FF == 0xE0A1 => self.op_exa1(opcode),
             // 0x8xy0-0x8xyE - Arithmetic/logic operations
             code => match code & 0xF00F {
                 // 0x8xy0 - Set Vx = Vy.
