@@ -137,6 +137,8 @@ impl Chip8 {
             code if code & 0xF00F == 0x9000 => self.op_9xy0(opcode),
             // 0xAnnn - The value of register I is set to nnn.
             0xA000..=0xAFFF => self.op_annn(opcode),
+            // 0xBnnn - Jump to location nnn + V0.
+            0xB000..=0xBFFF => self.op_bnnn(opcode),
             // 0x8xy0-0x8xyE - Arithmetic/logic operations
             code => match code & 0xF00F {
                 // 0x8xy0 - Set Vx = Vy.
