@@ -111,7 +111,7 @@ impl Chip8 {
     ///
     /// Actual implementation Vx=Vy=Vy<<1
     /// If the least-significant bit of Vx is 1, then VF is set to 1, otherwise 0.
-    pub(super) fn op_8xy8(&mut self, opcode: u16) {
+    pub(super) fn op_8xye(&mut self, opcode: u16) {
         let (x, y) = Self::regs_xy(opcode);
 
         self.v[x] = self.v[x] << 1;
@@ -259,22 +259,22 @@ mod tests {
     }
 
     #[test]
-    fn decode_op_test_8xy8_lsb_0() {
+    fn decode_op_test_8xye_lsb_0() {
         let mut chip = Chip8::new();
         chip.v[5] = 0x81;
         chip.v[6] = 0x5F;
-        chip.decode_op(0x8568);
+        chip.decode_op(0x856e);
         assert_eq!(chip.v[5], 0x02);
         assert_eq!(chip.v[6], 0x02);
         assert_eq!(chip.v[0xF], 0);
     }
 
     #[test]
-    fn decode_op_test_8xy8_lsb_1() {
+    fn decode_op_test_8xye_lsb_1() {
         let mut chip = Chip8::new();
         chip.v[5] = 0x77;
         chip.v[6] = 0x5F;
-        chip.decode_op(0x8568);
+        chip.decode_op(0x856e);
         assert_eq!(chip.v[5], 0xEE);
         assert_eq!(chip.v[6], 0xEE);
         assert_eq!(chip.v[0xF], 1);

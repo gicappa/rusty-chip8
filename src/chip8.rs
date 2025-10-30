@@ -113,43 +113,51 @@ impl Chip8 {
     ///            Fx65 - LD Vx, [I]
     pub(super) fn decode_op(&mut self, opcode: u16) {
         match opcode {
+            // 0x00e0 - Clear display
+            0x00e0 => self.op_00e0(opcode),
+            // 0x00ee - Return from a subroutine.
+            0x00ee => self.op_00ee(opcode),
             // 0x0nnn - Ignored (old SYS addr)
             0x0000..=0x0FFF => self.op_0nnn(opcode),
-
             // 0x1nnn - Jump
             0x1000..=0x1FFF => self.op_1nnn(opcode),
-
             // 0x2nnn - Call subroutine
             0x2000..=0x2FFF => self.op_2nnn(opcode),
-
-            // 0x3xkk - Skip if Vx == kk
+            // 0x3xkk - Skip next instruction if Vx = kk.
             0x3000..=0x3FFF => self.op_3xkk(opcode),
-
-            // 0x3xkk - Skip if Vx != kk
+            // 0x4xkk - Skip next instruction if Vx != kk.
             0x4000..=0x4FFF => self.op_4xkk(opcode),
-
-            // 0x5xy0 - Skip if Vx != kk
+            // 0x5xy0 - Skip next instruction if Vx = Vy.
             code if code & 0xF00F == 0x5000 => self.op_5xy0(opcode),
-
             // 6xkk - Set Vx = kk.
             0x6000..=0x6FFF => self.op_6xkk(opcode),
-
-            // 6xkk - Set Vx = kk.
+            // 7xkk - Set Vx = Vx + kk.
             0x7000..=0x7FFF => self.op_7xkk(opcode),
-
+            // 0x9xy0 - Skip next instruction if Vx != Vy.
+            code if code & 0xF00F == 0x9000 => self.op_9xy0(opcode),
             // 0x8xy0-0x8xyE - Arithmetic/logic operations
             code => match code & 0xF00F {
+                // 0x8xy0 - Set Vx = Vy.
                 0x8000 => self.op_8xy0(opcode),
+                // 0x8xy1 - Set Vx = Vy.
                 0x8001 => self.op_8xy1(opcode),
+                // 0x8xy2 - Set Vx = Vy.
                 0x8002 => self.op_8xy2(opcode),
+                // 0x8xy3 - Set Vx = Vy.
                 0x8003 => self.op_8xy3(opcode),
+                // 0x8xy4 - Set Vx = Vy.
                 0x8004 => self.op_8xy4(opcode),
+                // 0x8xy5 - Set Vx = Vy.
                 0x8005 => self.op_8xy5(opcode),
+                // 0x8xy6 - Set Vx = Vy.
                 0x8006 => self.op_8xy6(opcode),
+                // 0x8xy7 - Set Vx = Vy.
                 0x8007 => self.op_8xy7(opcode),
-                0x8008 => self.op_8xy8(opcode),
+                // 0x8xye - Set Vx = Vy.
+                0x800e => self.op_8xye(opcode),
                 _ => println!("Not matching"),
             },
+
         }
     }
 
