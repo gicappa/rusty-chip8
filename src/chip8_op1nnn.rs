@@ -3,6 +3,15 @@ use crate::chip8::Chip8;
 impl Chip8 {
     // Operations //////////////////////////////////////////////////////////////
 
+    /// 0nnn - SYS addr
+    /// Jump to a machine code routine at nnn.
+    /// This instruction is only used on the old computers on which Chip-8 was
+    /// originally implemented. It is ignored by modern interpreters.
+    pub(super) fn op_0nnn(&mut self, _opcode: u16) {
+        println!("0nnn instruction received - ignored");
+        // NO-OP Ignored
+    }
+
     /// Jump to location nnn.
     /// The interpreter sets the program counter to nnn.
     pub(super) fn op_1nnn(&mut self, opcode: u16) {
@@ -86,6 +95,18 @@ impl Chip8 {
 mod tests {
     use super::*;
 
+    #[test]
+    fn decode_op_test_0nnn() {
+        let mut chip = Chip8::new();
+
+        let last_pc = chip.pc;
+        let last_sp = chip.sp;
+
+        chip.decode_op(0x0234);
+
+        assert_eq!(chip.pc, last_pc);
+        assert_eq!(chip.sp, last_sp);
+    }
     #[test]
     fn decode_op_test_1nnn() {
         let mut chip = Chip8::new();

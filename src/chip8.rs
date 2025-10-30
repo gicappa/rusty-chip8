@@ -113,6 +113,9 @@ impl Chip8 {
     ///            Fx65 - LD Vx, [I]
     pub(super) fn decode_op(&mut self, opcode: u16) {
         match opcode {
+            // 0x0nnn - Ignored (old SYS addr)
+            0x0000..=0x0FFF => self.op_0nnn(opcode),
+
             // 0x1nnn - Jump
             0x1000..=0x1FFF => self.op_1nnn(opcode),
 
