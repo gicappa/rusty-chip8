@@ -1,4 +1,5 @@
 use crate::chip8::Chip8;
+use rand::random;
 
 impl Chip8 {
     // Operations //////////////////////////////////////////////////////////////
@@ -11,14 +12,25 @@ impl Chip8 {
 
         self.i = nnn;
     }
-
     /// Bnnn - JP V0, addr
     /// Jump to location nnn + V0.
     /// The program counter is set to nnn plus the value of V0.
     pub(super) fn op_bnnn(&mut self, opcode: u16) {
         let nnn = opcode & 0x0fff;
-        
+
         self.pc = (self.v[0] as u16) + nnn;
+    }
+    /// Cxkk - RND Vx, byte
+    /// Set Vx = random byte AND kk.
+    /// The interpreter generates a random number from 0 to 255, which is then ANDed with the value
+    /// kk. The results are stored in Vx. See instruction 8xy2 for more information on AND.
+    pub(super) fn op_cxkk(&mut self, opcode: u16) {
+        let _nnn = opcode & 0x0fff;
+        let x = ((opcode & 0x0f00) >> 8) as usize;
+        let kk = (opcode & 0x00ff) as u8;
+        let rnd: u8 = random();
+
+        self.v[x] = rnd & kk;
     }
 }
 
@@ -45,16 +57,32 @@ mod tests {
 
         assert_eq!(chip.pc, 0x510);
     }
+    #[test]
+    fn decode_op_test_cxkk_and_0() {
+        let mut chip = Chip8::new();
+        chip.v[5] = 0x77;
+
+        for _ in 0..5 {
+            chip.decode_op(0xC500);
+            assert_eq!(chip.v[5], 0x00);
+        }
+    }
+    #[test]
+    fn decode_op_test_cxkk_rnd() {
+        let mut chip = Chip8::new();
+        chip.v[5] = 0x77;
+
+        let mut res: Vec<u8> = Vec::new();
+
+        for _ in 0..9 {
+            chip.decode_op(0xC5FF);
+            res.push(chip.v[5]);
+        }
+
+        assert!(!res.iter().all(|x| *x == res[0]));
+    }
 }
 /*
-
-
-Cxkk - RND Vx, byte
-Set Vx = random byte AND kk.
-
-The interpreter generates a random number from 0 to 255, which is then ANDed with the value kk. The results are stored in Vx. See instruction 8xy2 for more information on AND.
-
-
 Dxyn - DRW Vx, Vy, nibble
 Display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision.
 
