@@ -6,7 +6,7 @@ mod cpu_op_04;
 mod gpu;
 
 use std::sync::mpsc;
-use std::sync::mpsc::{Receiver, Sender};
+use std::sync::mpsc::{Sender};
 use std::thread;
 use std::thread::sleep;
 use std::time::{Duration, Instant};

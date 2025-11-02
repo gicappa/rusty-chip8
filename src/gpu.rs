@@ -1,4 +1,4 @@
-use minifb::{Key, Scale, Window, WindowOptions};
+use minifb::{Scale, Window, WindowOptions};
 use std::sync::mpsc::{Receiver, TryRecvError};
 use std::time::Duration;
 
