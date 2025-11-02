@@ -1,8 +1,8 @@
-mod chip8;
-mod chip8_op_01;
-mod chip8_op_02;
-mod chip8_op_03;
-mod chip8_op_04;
+mod cpu;
+mod cpu_op_01;
+mod cpu_op_02;
+mod cpu_op_03;
+mod cpu_op_04;
 mod gpu;
 
 use std::sync::mpsc;
@@ -10,7 +10,7 @@ use std::thread;
 use std::thread::sleep;
 use std::time::{Duration, Instant};
 
-use crate::chip8::Chip8;
+use crate::cpu::CPU;
 use crate::gpu::GPU;
 use crate::gpu::{PIXELS};
 
@@ -18,7 +18,7 @@ fn main() {
     println!("Chip8 Emulator Starting...");
 
     let (tx, rx) = mpsc::channel::<[u8; PIXELS]>();
-    let mut chip8 = Chip8::new();
+    let mut chip8 = CPU::new();
     let mut gpu: GPU = GPU::new(rx);
 
     let _handle = thread::spawn(move || {

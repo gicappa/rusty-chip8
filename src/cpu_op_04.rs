@@ -1,6 +1,6 @@
-use crate::chip8::Chip8;
+use crate::cpu::CPU;
 
-impl Chip8 {
+impl CPU {
     // Operations //////////////////////////////////////////////////////////////
 
     /// Fx07 - LD Vx, DT

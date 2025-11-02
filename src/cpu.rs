@@ -6,7 +6,7 @@ pub const WIDTH: usize = 64;
 pub(crate) const HEIGHT: usize = 32;
 pub(crate) const START_ADDRESS: usize = 0x200;
 
-pub struct Chip8 {
+pub struct CPU {
     pub memory: [u8; MEMORY_SIZE],
     pub v: [u8; 16],
     pub i: u16,
@@ -19,7 +19,7 @@ pub struct Chip8 {
     pub display: [u8; WIDTH * HEIGHT],
 }
 
-impl Chip8 {
+impl CPU {
     pub fn new() -> Self {
         println!("Initializing CPU");
         println!("Memory available: {}", MEMORY_SIZE);
@@ -74,7 +74,7 @@ impl Chip8 {
     }
 
     fn read_opcode(&self) -> u16 {
-        let Chip8 { memory, pc, .. } = self;
+        let CPU { memory, pc, .. } = self;
         let _pc = *pc as usize;
 
         let hi = memory[_pc] as u16;
@@ -219,7 +219,7 @@ mod tests {
 
     #[test]
     fn load_rom_test() {
-        let mut chip = Chip8::new();
+        let mut chip = CPU::new();
 
         chip.load_rom("tests/fixtures/test_opcode.ch8")
             .expect("Error loading fixture files");
@@ -232,7 +232,7 @@ mod tests {
 
     #[test]
     fn new_initializes_state() {
-        let chip = Chip8::new();
+        let chip = CPU::new();
 
         assert_eq!(chip.pc, START_ADDRESS as u16);
         assert!(chip.memory.iter().all(|&b| b == 0));
@@ -244,7 +244,7 @@ mod tests {
     }
     #[test]
     fn reset_memory() {
-        let mut chip = Chip8::new();
+        let mut chip = CPU::new();
 
         chip.reset_memory();
 

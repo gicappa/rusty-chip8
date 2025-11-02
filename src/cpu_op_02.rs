@@ -1,6 +1,6 @@
-use crate::chip8::Chip8;
+use crate::cpu::CPU;
 
-impl Chip8 {
+impl CPU {
     // Operations //////////////////////////////////////////////////////////////
 
     /// 8xy0 - LD Vx, Vy
@@ -137,14 +137,14 @@ mod tests {
     #[test]
     fn regs_xy_extracts_indices() {
         // opcode 0x8AB1 -> x = A (10), y = B (11)
-        let (x, y) = Chip8::regs_xy(0x8AB1);
+        let (x, y) = CPU::regs_xy(0x8AB1);
         assert_eq!(x, 0xA);
         assert_eq!(y, 0xB);
     }
 
     #[test]
     fn decode_op_test_8xy0() {
-        let mut chip = Chip8::new();
+        let mut chip = CPU::new();
         chip.v[3] = 0x08;
         chip.v[4] = 0x10;
         chip.decode_op(0x8340);
@@ -154,7 +154,7 @@ mod tests {
 
     #[test]
     fn decode_op_test_8xy1() {
-        let mut chip = Chip8::new();
+        let mut chip = CPU::new();
         chip.v[2] = 0x40;
         chip.v[3] = 0xA8;
         chip.decode_op(0x8231);
@@ -162,7 +162,7 @@ mod tests {
     }
     #[test]
     fn decode_op_test_8xy2() {
-        let mut chip = Chip8::new();
+        let mut chip = CPU::new();
         chip.v[2] = 0xE8;
         chip.v[3] = 0x44;
         chip.decode_op(0x8232);
@@ -170,7 +170,7 @@ mod tests {
     }
     #[test]
     fn decode_op_test_8xy3() {
-        let mut chip = Chip8::new();
+        let mut chip = CPU::new();
         chip.v[5] = 0xE8;
         chip.v[6] = 0x56;
         chip.decode_op(0x8563);
@@ -178,7 +178,7 @@ mod tests {
     }
     #[test]
     fn decode_op_test_8xy4_no_carry() {
-        let mut chip = Chip8::new();
+        let mut chip = CPU::new();
         chip.v[5] = 0x08;
         chip.v[6] = 0x56;
         chip.decode_op(0x8564);
@@ -188,7 +188,7 @@ mod tests {
 
     #[test]
     fn decode_op_test_8xy4_with_carry() {
-        let mut chip = Chip8::new();
+        let mut chip = CPU::new();
         chip.v[5] = 0xFF;
         chip.v[6] = 0x04;
         chip.decode_op(0x8564);
@@ -198,7 +198,7 @@ mod tests {
 
     #[test]
     fn decode_op_test_8xy5_with_carry() {
-        let mut chip = Chip8::new();
+        let mut chip = CPU::new();
         chip.v[5] = 0x5F;
         chip.v[6] = 0x14;
         chip.decode_op(0x8565);
@@ -208,7 +208,7 @@ mod tests {
 
     #[test]
     fn decode_op_test_8xy5_no_carry() {
-        let mut chip = Chip8::new();
+        let mut chip = CPU::new();
         chip.v[5] = 0x14;
         chip.v[6] = 0x5F;
         chip.decode_op(0x8565);
@@ -218,7 +218,7 @@ mod tests {
 
     #[test]
     fn decode_op_test_8xy6_lsb_1() {
-        let mut chip = Chip8::new();
+        let mut chip = CPU::new();
         chip.v[5] = 0xEE;
         chip.v[6] = 0x5F;
         chip.decode_op(0x8566);
@@ -229,7 +229,7 @@ mod tests {
 
     #[test]
     fn decode_op_test_8xy6_lsb_0() {
-        let mut chip = Chip8::new();
+        let mut chip = CPU::new();
         chip.v[5] = 0xE0;
         chip.v[6] = 0x34;
         chip.decode_op(0x8566);
@@ -240,7 +240,7 @@ mod tests {
 
     #[test]
     fn decode_op_test_8xy7_with_carry() {
-        let mut chip = Chip8::new();
+        let mut chip = CPU::new();
         chip.v[5] = 0x14;
         chip.v[6] = 0x5F;
         chip.decode_op(0x8567);
@@ -250,7 +250,7 @@ mod tests {
 
     #[test]
     fn decode_op_test_8xy7_no_carry() {
-        let mut chip = Chip8::new();
+        let mut chip = CPU::new();
         chip.v[5] = 0x5F;
         chip.v[6] = 0x14;
         chip.decode_op(0x8567);
@@ -260,7 +260,7 @@ mod tests {
 
     #[test]
     fn decode_op_test_8xye_lsb_0() {
-        let mut chip = Chip8::new();
+        let mut chip = CPU::new();
         chip.v[5] = 0x81;
         chip.v[6] = 0x5F;
         chip.decode_op(0x856e);
@@ -271,7 +271,7 @@ mod tests {
 
     #[test]
     fn decode_op_test_8xye_lsb_1() {
-        let mut chip = Chip8::new();
+        let mut chip = CPU::new();
         chip.v[5] = 0x77;
         chip.v[6] = 0x5F;
         chip.decode_op(0x856e);

@@ -32,7 +32,7 @@ impl GPU {
         self.window
             .limit_update_rate(Some(Duration::from_millis(4)));
 
-        while self.window.is_open() && !self.window.is_key_down(Key::Escape) {
+        while self.window.is_open() {
             match self.rx.try_recv() {
                 Ok(vram) => {
                     self.draw(&vram);
@@ -42,8 +42,6 @@ impl GPU {
                 }
                 Err(TryRecvError::Disconnected) => break, // producer is gone; exit loop
             }
-
-            self.window.update()
         }
     }
 
