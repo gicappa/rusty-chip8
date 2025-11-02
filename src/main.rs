@@ -1,8 +1,8 @@
 mod chip8;
-mod chip8_op0nnn;
-mod chip8_op8xyz;
-mod chip8_opannn;
-mod chip8_opfx07;
+mod chip8_op_01;
+mod chip8_op_02;
+mod chip8_op_03;
+mod chip8_op_04;
 mod gpu;
 
 use std::sync::mpsc;
