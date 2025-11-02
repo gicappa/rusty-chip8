@@ -6,23 +6,29 @@ mod cpu_op_04;
 mod gpu;
 
 use std::sync::mpsc;
+use std::sync::mpsc::{Receiver, Sender};
 use std::thread;
 use std::thread::sleep;
 use std::time::{Duration, Instant};
 
 use crate::cpu::CPU;
 use crate::gpu::GPU;
-use crate::gpu::{PIXELS};
+use crate::gpu::PIXELS;
 
-fn main() {
-    println!("Chip8 Emulator Starting...");
+struct Chip8 {
+    cpu: CPU,
+    tx :Sender<[u8; PIXELS]>
+}
 
-    let (tx, rx) = mpsc::channel::<[u8; PIXELS]>();
-    let mut chip8 = CPU::new();
-    let mut gpu: GPU = GPU::new(rx);
+impl Chip8 {
+    pub fn new(cpu: CPU, tx :Sender<[u8; PIXELS]>) -> Self {
+        Self {
+            cpu,
+            tx
+        }
+    }
 
-    let _handle = thread::spawn(move || {
-
+    pub fn start(&mut self) {
         // Target ~60 Hz for timers / display refresh.
         // 1_000_000 / 60 ≈ 16_666.67
         let interval = Duration::from_micros(16_666);
@@ -30,22 +36,22 @@ fn main() {
 
         loop {
             // Execute one CPU instruction (or whatever `step()` encapsulates).
-            chip8.step();
+            self.cpu.step();
 
             // Handle drawing if the emulator signalled it.
-            if chip8.draw_flag() {
-                let frame = chip8.display;
-                let _ = tx.send(frame);
+            if self.cpu.draw_flag() {
+                let frame = self.cpu.display;
+                let _ = self.tx.send(frame);
             }
 
             // Update timers (CHIP-8 spec: they decrement at 60 Hz when > 0).
-            if chip8.delay_timer > 0 {
-                chip8.delay_timer -= 1;
+            if self.cpu.delay_timer > 0 {
+                self.cpu.delay_timer -= 1;
             }
 
-            if chip8.sound_timer > 0 {
-                chip8.sound_timer -= 1;
-                if chip8.sound_timer == 0 {
+            if self.cpu.sound_timer > 0 {
+                self.cpu.sound_timer -= 1;
+                if self.cpu.sound_timer == 0 {
                     println!("beep!"); // Placeholder for actual audio.
                 }
             }
@@ -62,6 +68,20 @@ fn main() {
                 last_time = now;
             }
         }
+    }
+}
+
+
+fn main() {
+    println!("Chip8 Emulator Starting...");
+
+    let (tx, rx) = mpsc::channel::<[u8; PIXELS]>();
+    let cpu = CPU::new();
+    let mut gpu: GPU = GPU::new(rx);
+
+    let _handle = thread::spawn(move || {
+        let mut chip8 = Chip8::new(cpu, tx);
+        chip8.start();
     });
 
     gpu.start();
