@@ -2,13 +2,18 @@ use minifb::{Key, Scale, Window, WindowOptions};
 use std::sync::mpsc::{Receiver, TryRecvError};
 use std::time::Duration;
 
-pub struct GPU<const W: usize, const H: usize> {
-    rx: Receiver<[u8; 2048]>,
+pub const W: usize = 64;
+pub const H: usize = 32;
+pub const PIXELS: usize = W * H;
+
+pub struct GPU {
+    rx: Receiver<[u8; PIXELS]>,
     window: Window,
 }
 
-impl<const W: usize, const H: usize> GPU<W, H> {
-    pub fn new(rx: Receiver<[u8; 2048]>) -> Self {
+impl GPU {
+
+    pub fn new(rx: Receiver<[u8; PIXELS]>) -> Self {
         let mut opts = WindowOptions::default();
         opts.scale = Scale::X16;
 
@@ -42,7 +47,7 @@ impl<const W: usize, const H: usize> GPU<W, H> {
         }
     }
 
-    pub fn draw(&mut self, vram: &[u8; 2048]) {
+    pub fn draw(&mut self, vram: &[u8; PIXELS]) {
         let buffer: Vec<u32> = vram
             .iter()
             .map(|&pix| if pix != 0 { 0x00FFFFFF } else { 0x00000000 })

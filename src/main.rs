@@ -6,22 +6,26 @@ mod chip8_opfx07;
 mod gpu;
 
 use std::sync::mpsc;
-use crate::chip8::Chip8;
-use crate::chip8::{HEIGHT, WIDTH};
-use crate::gpu::GPU;
 use std::thread;
 use std::thread::sleep;
 use std::time::{Duration, Instant};
 
+use crate::chip8::Chip8;
+use crate::gpu::GPU;
+use crate::gpu::{PIXELS};
+
 fn main() {
     println!("Chip8 Emulator Starting...");
 
+    let (tx, rx) = mpsc::channel::<[u8; PIXELS]>();
     let mut chip8 = Chip8::new();
-    let (tx, rx) = mpsc::channel::<[u8; 2048]>();
-    let mut gpu: GPU<WIDTH, HEIGHT> = GPU::new(rx);
+    let mut gpu: GPU = GPU::new(rx);
+
     let _handle = thread::spawn(move || {
+
         // Target ~60 Hz for timers / display refresh.
-        let interval = Duration::from_micros(16_666); // 1_000_000 / 60 ≈ 16_666.67
+        // 1_000_000 / 60 ≈ 16_666.67
+        let interval = Duration::from_micros(16_666);
         let mut last_time = Instant::now();
 
         loop {
