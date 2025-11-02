@@ -1,9 +1,8 @@
 use std::process::exit;
 use std::{fs, io};
+use crate::gpu::PIXELS;
 
 pub(crate) const MEMORY_SIZE: usize = 4096;
-pub const WIDTH: usize = 64;
-pub(crate) const HEIGHT: usize = 32;
 pub(crate) const START_ADDRESS: usize = 0x200;
 
 pub struct CPU {
@@ -16,7 +15,7 @@ pub struct CPU {
     pub delay_timer: u8,
     pub sound_timer: u8,
     // pub keypad: [u8; 16],
-    pub display: [u8; WIDTH * HEIGHT],
+    pub display: [u8; PIXELS],
 }
 
 impl CPU {
@@ -34,7 +33,7 @@ impl CPU {
             delay_timer: 0,
             sound_timer: 0,
             // keypad: [0; 16],
-            display: [0; WIDTH * HEIGHT],
+            display: [0; PIXELS],
         };
 
         s.reset_memory();
@@ -58,7 +57,7 @@ impl CPU {
 
         self.memory[80..512].fill(0);
 
-        for x in 0..1024 {
+        for x in 0..PIXELS {
             self.display[x] = if x.is_multiple_of(2) { 0 } else { 255 }
         }
     }
@@ -189,10 +188,6 @@ impl CPU {
 
     pub fn draw_flag(&self) -> bool {
         true
-    }
-
-    pub fn draw_display(&self) {
-        println!("draw display");
     }
 
     pub fn load_rom(&mut self, filename: &str) -> Result<(), io::Error> {

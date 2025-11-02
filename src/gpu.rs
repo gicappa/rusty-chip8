@@ -15,6 +15,7 @@ impl GPU {
 
     pub fn new(rx: Receiver<[u8; PIXELS]>) -> Self {
         let mut opts = WindowOptions::default();
+
         opts.scale = Scale::X16;
 
         let window = Window::new(
@@ -29,6 +30,7 @@ impl GPU {
 
     pub fn start(&mut self) {
         self.window.set_background_color(0, 0, 0);
+
         self.window
             .limit_update_rate(Some(Duration::from_millis(4)));
 
@@ -48,7 +50,7 @@ impl GPU {
     pub fn draw(&mut self, vram: &[u8; PIXELS]) {
         let buffer: Vec<u32> = vram
             .iter()
-            .map(|&pix| if pix != 0 { 0x00FFFFFF } else { 0x00000000 })
+            .map(|&pix| if pix != 0 { 0x00FF_FFFF } else { 0x0000_0000 })
             .collect();
 
         self.window
