@@ -2,7 +2,7 @@ use std::process::exit;
 use std::{fs, io};
 
 pub(crate) const MEMORY_SIZE: usize = 4096;
-pub(crate) const WIDTH: usize = 64;
+pub const WIDTH: usize = 64;
 pub(crate) const HEIGHT: usize = 32;
 pub(crate) const START_ADDRESS: usize = 0x200;
 
@@ -24,21 +24,25 @@ impl Chip8 {
         println!("Initializing CPU");
         println!("Memory available: {}", MEMORY_SIZE);
 
-        Self {
+        let mut s = Self {
             memory: [0; MEMORY_SIZE],
             v: [0; 16],
             i: 0,
-            pc: 0x200,
+            pc: START_ADDRESS as u16,
             sp: 0,
             stack: Vec::new(),
             delay_timer: 0,
             sound_timer: 0,
             // keypad: [0; 16],
             display: [0; WIDTH * HEIGHT],
-        }
+        };
+
+        s.reset_memory();
+
+        s
     }
 
-    pub fn reset_memory(&mut self) {
+    fn reset_memory(&mut self) {
         let font: [u8; 80] = [
             0xF0, 0x90, 0x90, 0x90, 0xF0, 0x20, 0x60, 0x20, 0x20, 0x70, 0xF0, 0x10, 0xF0, 0x80,
             0xF0, 0xF0, 0x10, 0xF0, 0x10, 0xF0, 0x90, 0x90, 0xF0, 0x10, 0x10, 0xF0, 0x80, 0xF0,
@@ -53,6 +57,10 @@ impl Chip8 {
         }
 
         self.memory[80..512].fill(0);
+
+        for x in 0..1024 {
+            self.display[x] = if x.is_multiple_of(2) { 0 } else { 255 }
+        }
     }
 
     /// Executing a step of the emulator cycle
@@ -147,6 +155,13 @@ impl Chip8 {
             code if code & 0xF0FF == 0xE09E => self.op_ex9e(opcode),
             // 0xexa1 - Checks the keyboard
             code if code & 0xF0FF == 0xE0A1 => self.op_exa1(opcode),
+            code if code & 0xF0FF == 0xF007 => self.op_fx07(opcode),
+            code if code & 0xF0FF == 0xF00A => self.op_fx0a(opcode),
+            code if code & 0xF0FF == 0xF015 => self.op_fx15(opcode),
+            code if code & 0xF0FF == 0xF018 => self.op_fx18(opcode),
+            code if code & 0xF0FF == 0xF01E => self.op_fx1e(opcode),
+            code if code & 0xF0FF == 0xF029 => self.op_fx29(opcode),
+            code if code & 0xF0FF == 0xF033 => self.op_fx33(opcode),
             // 0x8xy0-0x8xyE - Arithmetic/logic operations
             code => match code & 0xF00F {
                 // 0x8xy0 - Set Vx = Vy.
