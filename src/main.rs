@@ -8,22 +8,25 @@ mod chip8;
 mod config;
 mod debug_cli;
 
-use std::sync::mpsc;
+use std::sync::{mpsc, Arc};
 use std::thread;
 
 use crate::chip8::Chip8;
-use crate::cpu::CPU;
-use crate::gpu::GPU;
+use crate::cpu::Cpu;
+use crate::gpu::Gpu;
 use crate::config::VRAM;
+// use crate::debug_cli::DebugCli;
 
 fn main() {
     let (tx, rx) = mpsc::channel::<VRAM>();
-    let cpu = CPU::new();
-    let mut gpu: GPU = GPU::new(rx);
 
+    let cpu = Cpu::new();
+    let mut gpu: Gpu = Gpu::new(rx);
 
+    // let debug_cli = DebugCli::new(&cpu);
+    // debug_cli.start();
 
-    let _handle = thread::spawn(move || {
+    let handle = thread::spawn(move || {
         let mut chip8 = Chip8::new(cpu, tx);
         chip8.start();
     });
@@ -33,6 +36,6 @@ fn main() {
     // chip8
     //     .load_rom("rom.ch8")
     //     .expect("File not found or not readable");
-    let _ = _handle.join().unwrap();
+    let _ = handle.join().unwrap();
 }
 

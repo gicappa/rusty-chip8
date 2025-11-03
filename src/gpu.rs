@@ -4,12 +4,12 @@ use std::sync::mpsc::RecvTimeoutError;
 use std::sync::mpsc::Receiver;
 use std::time::Duration;
 
-pub struct GPU {
+pub struct Gpu {
     rx: Receiver<VRAM>,
     window: Window,
 }
 
-impl GPU {
+impl Gpu {
     pub fn new(rx: Receiver<VRAM>) -> Self {
         let mut opts = WindowOptions::default();
 
@@ -19,7 +19,7 @@ impl GPU {
             "Rusty Chip-8 Emulator", W, H, opts)
             .unwrap_or_else(|e| { panic!("{}", e); });
 
-        GPU {
+        Gpu {
             rx,
             window,
         }

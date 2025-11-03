@@ -5,7 +5,7 @@ use std::{fs, io};
 pub(crate) const MEMORY_SIZE: usize = 4096;
 pub(crate) const START_ADDRESS: usize = 0x200;
 
-pub struct CPU {
+pub struct Cpu {
     pub memory: [u8; MEMORY_SIZE],
     pub v: [u8; 16],
     pub i: u16,
@@ -18,7 +18,7 @@ pub struct CPU {
     pub display: VRAM,
 }
 
-impl CPU {
+impl Cpu {
     pub fn new() -> Self {
         println!("Initializing CPU");
         println!("Memory available: {}", MEMORY_SIZE);
@@ -73,7 +73,7 @@ impl CPU {
     }
 
     fn read_opcode(&self) -> u16 {
-        let CPU { memory, pc, .. } = self;
+        let Cpu { memory, pc, .. } = self;
         let _pc = *pc as usize;
 
         let hi = memory[_pc] as u16;
@@ -214,7 +214,7 @@ mod tests {
 
     #[test]
     fn load_rom_test() {
-        let mut chip = CPU::new();
+        let mut chip = Cpu::new();
 
         chip.load_rom("tests/fixtures/test_opcode.ch8")
             .expect("Error loading fixture files");
@@ -227,7 +227,7 @@ mod tests {
 
     #[test]
     fn new_initializes_state() {
-        let chip = CPU::new();
+        let chip = Cpu::new();
 
         assert_eq!(chip.pc, START_ADDRESS as u16);
         assert!(chip.memory.iter().all(|&b| b == 0));
@@ -239,7 +239,7 @@ mod tests {
     }
     #[test]
     fn reset_memory() {
-        let mut chip = CPU::new();
+        let mut chip = Cpu::new();
 
         chip.reset_memory();
 

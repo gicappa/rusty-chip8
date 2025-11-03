@@ -2,19 +2,19 @@ use std::sync::mpsc::Sender;
 use std::thread::sleep;
 use std::time::{Duration, Instant};
 
-use crate::cpu::CPU;
 use crate::config::VRAM;
+use crate::cpu::Cpu;
 
 pub struct Chip8 {
-    cpu: CPU,
-    tx :Sender<VRAM>
+    cpu: Cpu,
+    tx: Sender<VRAM>,
 }
 
 impl Chip8 {
-    pub fn new(cpu: CPU, tx :Sender<VRAM>) -> Self {
+    pub fn new(cpu: Cpu, tx: Sender<VRAM>) -> Self {
         Self {
             cpu,
-            tx
+            tx,
         }
     }
 

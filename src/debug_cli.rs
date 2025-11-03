@@ -1,27 +1,26 @@
+use crate::cpu::Cpu;
 use anyhow::Result;
 use crossterm::{
-    event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode},
-    execute, terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen}
+    event::{DisableMouseCapture, EnableMouseCapture},
+    execute, terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
 use ratatui::{
     prelude::*,
     // widgets::{Block, Borders, Paragraph, Table, Row, Cell}
 };
-use std::{io, time::{Duration, Instant}, collections::VecDeque, sync::mpsc, thread};
 use std::io::Stdout;
-use crate::cpu::CPU;
+use std::{collections::VecDeque, io, sync::mpsc, time::Instant};
 
-struct App {
-    cpu: CPU,
+pub struct DebugCli<'a> {
+    cpu: &'a Cpu,
     logs: Vec<String>,
     fps_history: VecDeque<f32>,
     last_frame: Instant,
-    terminal: Terminal<CrosstermBackend<Stdout>>
+    terminal: Terminal<CrosstermBackend<Stdout>>,
 }
 
-impl App {
-
-    fn new(cpu: CPU) -> Self {
+impl<'a> DebugCli<'a> {
+    pub fn new(cpu: &'a Cpu) -> Self {
 
         // setup terminal
         enable_raw_mode().unwrap();
@@ -35,7 +34,7 @@ impl App {
             logs: Vec::with_capacity(2000),
             fps_history: VecDeque::with_capacity(120),
             last_frame: Instant::now(),
-            terminal
+            terminal,
         }
     }
 
@@ -47,8 +46,7 @@ impl App {
         }
     }
 
-    fn tick(&mut self) {
-    }
+    fn tick(&mut self) {}
 
     fn avg_fps(&self) -> f32 {
         if self.fps_history.is_empty() { return 0.0; }
@@ -65,6 +63,9 @@ impl App {
         Ok(())
     }
 
+    pub(crate) fn start(&self) {
+        todo!()
+    }
 }
 
 fn run_app<B: Backend>(terminal: &mut Terminal<B>, rx: mpsc::Receiver<String>) -> Result<()> {
@@ -165,11 +166,11 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, rx: mpsc::Receiver<String>) -
 
 // Sparklines ASCII super semplici; min/max clampati
 fn ascii_sparkline(hist: &VecDeque<f32>, min: f32, max: f32) -> String {
-    const BARS: &[char] = &['▁','▂','▃','▄','▅','▆','▇','█'];
+    const BARS: &[char] = &['▁', '▂', '▃', '▄', '▅', '▆', '▇', '█'];
     let mut s = String::new();
     for &v in hist {
         let x = v.clamp(min, max);
-        let t = ( (x - min) / (max - min + f32::EPSILON) ) * (BARS.len() as f32 - 1.0);
+        let t = ((x - min) / (max - min + f32::EPSILON)) * (BARS.len() as f32 - 1.0);
         s.push(BARS[t.round() as usize]);
     }
     s

@@ -1,7 +1,7 @@
-use crate::cpu::CPU;
+use crate::cpu::Cpu;
 use rand::random;
 
-impl CPU {
+impl Cpu {
     // Operations //////////////////////////////////////////////////////////////
 
     /// Annn - LD I, addr
@@ -64,7 +64,7 @@ mod tests {
 
     #[test]
     fn decode_op_test_annn() {
-        let mut chip = CPU::new();
+        let mut chip = Cpu::new();
         chip.i = 0x444;
 
         chip.decode_op(0xA555);
@@ -73,7 +73,7 @@ mod tests {
     }
     #[test]
     fn decode_op_test_bnnn() {
-        let mut chip = CPU::new();
+        let mut chip = Cpu::new();
         chip.pc = 0x400;
         chip.v[0] = 0x10;
 
@@ -83,7 +83,7 @@ mod tests {
     }
     #[test]
     fn decode_op_test_cxkk_and_0() {
-        let mut chip = CPU::new();
+        let mut chip = Cpu::new();
         chip.v[5] = 0x77;
 
         for _ in 0..5 {
@@ -93,7 +93,7 @@ mod tests {
     }
     #[test]
     fn decode_op_test_cxkk_rnd() {
-        let mut chip = CPU::new();
+        let mut chip = Cpu::new();
         chip.v[5] = 0x77;
 
         let mut res: Vec<u8> = Vec::new();

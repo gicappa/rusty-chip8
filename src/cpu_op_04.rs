@@ -1,6 +1,6 @@
-use crate::cpu::CPU;
+use crate::cpu::Cpu;
 
-impl CPU {
+impl Cpu {
     // Operations //////////////////////////////////////////////////////////////
 
     /// Fx07 - LD Vx, DT

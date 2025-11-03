@@ -1,6 +1,6 @@
-use crate::cpu::CPU;
+use crate::cpu::Cpu;
 
-impl CPU {
+impl Cpu {
     // Operations //////////////////////////////////////////////////////////////
 
     /// 0nnn - SYS addr
@@ -124,7 +124,7 @@ mod tests {
 
     #[test]
     fn decode_op_test_0nnn() {
-        let mut chip = CPU::new();
+        let mut chip = Cpu::new();
 
         let last_pc = chip.pc;
         let last_sp = chip.sp;
@@ -136,13 +136,13 @@ mod tests {
     }
     #[test]
     fn decode_op_test_00e0() {
-        let mut chip = CPU::new();
+        let mut chip = Cpu::new();
         chip.decode_op(0x00e0);
         assert!(false);
     }
     #[test]
     fn decode_op_test_00ee() {
-        let mut chip = CPU::new();
+        let mut chip = Cpu::new();
         chip.sp = 1;
         chip.pc = 0x300;
         chip.stack.push(0x400);
@@ -154,13 +154,13 @@ mod tests {
     }
     #[test]
     fn decode_op_test_1nnn() {
-        let mut chip = CPU::new();
+        let mut chip = Cpu::new();
         chip.decode_op(0x1234);
         assert_eq!(chip.pc, 0x234);
     }
     #[test]
     fn decode_op_test_2nnn() {
-        let mut chip = CPU::new();
+        let mut chip = Cpu::new();
         chip.pc = 0x300;
 
         chip.decode_op(0x2345);
@@ -171,7 +171,7 @@ mod tests {
     }
     #[test]
     fn decode_op_test_op_3xkk_x_equals_kk() {
-        let mut chip = CPU::new();
+        let mut chip = Cpu::new();
         chip.pc = 0x300;
         chip.v[4] = 0x05;
 
@@ -181,7 +181,7 @@ mod tests {
     }
     #[test]
     fn decode_op_test_op_3xkk_x_not_equals_kk() {
-        let mut chip = CPU::new();
+        let mut chip = Cpu::new();
         chip.pc = 0x300;
         chip.v[4] = 0x05;
 
@@ -191,7 +191,7 @@ mod tests {
     }
     #[test]
     fn decode_op_test_op_4xkk_x_equals_kk() {
-        let mut chip = CPU::new();
+        let mut chip = Cpu::new();
         chip.pc = 0x300;
         chip.v[4] = 0x05;
 
@@ -201,7 +201,7 @@ mod tests {
     }
     #[test]
     fn decode_op_test_op_4xkk_x_not_equals_kk() {
-        let mut chip = CPU::new();
+        let mut chip = Cpu::new();
         chip.pc = 0x300;
         chip.v[4] = 0x05;
 
@@ -211,7 +211,7 @@ mod tests {
     }
     #[test]
     fn decode_op_test_op_5xy0_vx_equals_vy() {
-        let mut chip = CPU::new();
+        let mut chip = Cpu::new();
         chip.pc = 0x300;
         chip.v[4] = 0x05;
         chip.v[0] = 0x05;
@@ -221,7 +221,7 @@ mod tests {
     }
     #[test]
     fn decode_op_test_op_5xy0_vx_not_equals_vy() {
-        let mut chip = CPU::new();
+        let mut chip = Cpu::new();
         chip.pc = 0x300;
         chip.v[4] = 0x05;
         chip.v[0] = 0x03;
@@ -232,7 +232,7 @@ mod tests {
     }
     #[test]
     fn decode_op_test_op_6xkk() {
-        let mut chip = CPU::new();
+        let mut chip = Cpu::new();
         chip.v[4] = 0x05;
 
         chip.decode_op(0x6483);
@@ -241,7 +241,7 @@ mod tests {
     }
     #[test]
     fn decode_op_test_op_7xkk() {
-        let mut chip = CPU::new();
+        let mut chip = Cpu::new();
         chip.v[4] = 0x05;
 
         chip.decode_op(0x7483);
@@ -250,7 +250,7 @@ mod tests {
     }
     #[test]
     fn decode_op_test_op_9xy0_vx_equals_vy() {
-        let mut chip = CPU::new();
+        let mut chip = Cpu::new();
         chip.pc = 0x300;
         chip.v[4] = 0x05;
         chip.v[0] = 0x05;
@@ -260,7 +260,7 @@ mod tests {
     }
     #[test]
     fn decode_op_test_op_9xy0_vx_not_equals_vy() {
-        let mut chip = CPU::new();
+        let mut chip = Cpu::new();
         chip.pc = 0x300;
         chip.v[4] = 0x05;
         chip.v[0] = 0x03;
