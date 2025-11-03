@@ -1,4 +1,4 @@
-use crate::confg::{H, VRAM, W};
+use crate::config::{H, VRAM, W};
 use std::process::exit;
 use std::{fs, io};
 

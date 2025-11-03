@@ -3,7 +3,7 @@ use std::thread::sleep;
 use std::time::{Duration, Instant};
 
 use crate::cpu::CPU;
-use crate::confg::VRAM;
+use crate::config::VRAM;
 
 pub struct Chip8 {
     cpu: CPU,

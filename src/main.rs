@@ -5,7 +5,8 @@ mod cpu_op_03;
 mod cpu_op_04;
 mod gpu;
 mod chip8;
-mod confg;
+mod config;
+mod debug_cli;
 
 use std::sync::mpsc;
 use std::thread;
@@ -13,15 +14,14 @@ use std::thread;
 use crate::chip8::Chip8;
 use crate::cpu::CPU;
 use crate::gpu::GPU;
-use crate::confg::VRAM;
+use crate::config::VRAM;
 
 fn main() {
-    println!("Chip8 Emulator Starting...");
-
     let (tx, rx) = mpsc::channel::<VRAM>();
-
     let cpu = CPU::new();
     let mut gpu: GPU = GPU::new(rx);
+
+
 
     let _handle = thread::spawn(move || {
         let mut chip8 = Chip8::new(cpu, tx);
@@ -35,3 +35,4 @@ fn main() {
     //     .expect("File not found or not readable");
     let _ = _handle.join().unwrap();
 }
+

@@ -1,4 +1,4 @@
-use crate::confg::{H, VRAM, W};
+use crate::config::{H, VRAM, W};
 use minifb::{Scale, Window, WindowOptions};
 use std::sync::mpsc::RecvTimeoutError;
 use std::sync::mpsc::Receiver;
@@ -27,9 +27,7 @@ impl GPU {
 
     pub fn start(&mut self) {
         self.window.set_background_color(0, 0, 0);
-
-        self.window
-            .limit_update_rate(Some(Duration::from_millis(4)));
+        self.window.set_target_fps(60);
 
         while self.window.is_open() {
             match self.rx.recv_timeout(Duration::from_micros(1666)) {
