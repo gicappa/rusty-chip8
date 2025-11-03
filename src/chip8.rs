@@ -25,25 +25,13 @@ impl Chip8 {
         let mut last_time = Instant::now();
 
         loop {
-            // Execute one CPU instruction (or whatever `step()` encapsulates).
-            self.cpu.step();
+            // Execute one CPU cycle
+            self.cpu.clk();
 
             // Handle drawing if the emulator signalled it.
             if self.cpu.draw_flag() {
-                let frame = self.cpu.display;
+                let frame = self.cpu.vram;
                 let _ = self.tx.send(frame);
-            }
-
-            // Update timers (CHIP-8 spec: they decrement at 60 Hz when > 0).
-            if self.cpu.delay_timer > 0 {
-                self.cpu.delay_timer -= 1;
-            }
-
-            if self.cpu.sound_timer > 0 {
-                self.cpu.sound_timer -= 1;
-                if self.cpu.sound_timer == 0 {
-                    println!("beep!"); // Placeholder for actual audio.
-                }
             }
 
             // Frame pacing: sleep remaining time this frame if we are ahead of schedule.

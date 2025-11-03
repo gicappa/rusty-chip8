@@ -1,3 +1,4 @@
+use crate::config::{H, W};
 use crate::cpu::Cpu;
 
 impl Cpu {
@@ -8,14 +9,15 @@ impl Cpu {
     /// This instruction is only used on the old computers on which Chip-8 was
     /// originally implemented. It is ignored by modern interpreters.
     pub(super) fn op_0nnn(&mut self, _opcode: u16) {
-        println!("0nnn instruction received - ignored");
+        print!(".")
         // NO-OP Ignored
     }
 
     ///00E0 - CLS
     /// Clear the display.
     pub(super) fn op_00e0(&mut self, _opcode: u16) {
-        // NO-OP Ignored
+        self.vram = [false; H * W];
+        self.draw_flag = true;
     }
 
     /// 00EE - RET
@@ -136,9 +138,13 @@ mod tests {
     }
     #[test]
     fn decode_op_test_00e0() {
-        let mut chip = Cpu::new();
-        chip.decode_op(0x00e0);
-        assert!(false);
+        let mut cpu = Cpu::new();
+        cpu.decode_op(0x00e0);
+        cpu.vram.iter().for_each(|item| {
+            assert_eq!(*item, false);
+        });
+
+        assert_eq!(cpu.draw_flag, true);
     }
     #[test]
     fn decode_op_test_00ee() {

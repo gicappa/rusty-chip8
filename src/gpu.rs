@@ -45,7 +45,7 @@ impl Gpu {
     pub fn draw(&mut self, vram: &VRAM) {
         let buffer: Vec<u32> = vram
             .iter()
-            .map(|&pix| if pix != 0 { 0x00FF_FFFF } else { 0x0000_0000 })
+            .map(|&p| if p { 0x00FF_FFFF } else { 0x0000_0000 })
             .collect();
 
         self.window

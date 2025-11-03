@@ -68,7 +68,7 @@ impl<'a> DebugCli<'a> {
     }
 }
 
-fn run_app<B: Backend>(terminal: &mut Terminal<B>, rx: mpsc::Receiver<String>) -> Result<()> {
+fn run_app<B: Backend>(_terminal: &mut Terminal<B>, _rx: mpsc::Receiver<String>) -> Result<()> {
     // let mut app = App::new(CPU::new());
     // let target_frame = Duration::from_millis(16); // ~60 FPS
     //

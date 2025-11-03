@@ -1,20 +1,21 @@
+mod gpu;
+mod chip8;
+mod config;
+#[allow(dead_code)]
+mod debug_cli;
 mod cpu;
 mod cpu_op_01;
 mod cpu_op_02;
 mod cpu_op_03;
 mod cpu_op_04;
-mod gpu;
-mod chip8;
-mod config;
-mod debug_cli;
 
-use std::sync::{mpsc, Arc};
+use std::sync::mpsc;
 use std::thread;
 
 use crate::chip8::Chip8;
+use crate::config::VRAM;
 use crate::cpu::Cpu;
 use crate::gpu::Gpu;
-use crate::config::VRAM;
 // use crate::debug_cli::DebugCli;
 
 fn main() {

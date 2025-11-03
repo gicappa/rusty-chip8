@@ -7,5 +7,15 @@ edition = "2024"
 rand = "0.10.0-rc.0"
 minifb = "0.28.0"
 anyhow = "1.0.100"
-crossterm = "0.27"
-ratatui = "0.28"
+crossterm = "0.29.0"
+ratatui = "0.29.0"
+
+[profile.dev]
+opt-level = 0
+debug = true
+overflow-checks = true
+
+[profile.release]
+opt-level = 3
+debug = false
+lto = true

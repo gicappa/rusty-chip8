@@ -6,7 +6,7 @@ pub(crate) const MEMORY_SIZE: usize = 4096;
 pub(crate) const START_ADDRESS: usize = 0x200;
 
 pub struct Cpu {
-    pub memory: [u8; MEMORY_SIZE],
+    pub mem: [u8; MEMORY_SIZE],
     pub v: [u8; 16],
     pub i: u16,
     pub pc: u16,
@@ -14,17 +14,15 @@ pub struct Cpu {
     pub stack: Vec<u16>,
     pub delay_timer: u8,
     pub sound_timer: u8,
-    // pub keypad: [u8; 16],
-    pub display: VRAM,
+    pub _keypad: [u8; 16],
+    pub vram: VRAM,
+    pub(super) draw_flag: bool,
 }
 
 impl Cpu {
     pub fn new() -> Self {
-        println!("Initializing CPU");
-        println!("Memory available: {}", MEMORY_SIZE);
-
         let mut s = Self {
-            memory: [0; MEMORY_SIZE],
+            mem: [0; MEMORY_SIZE],
             v: [0; 16],
             i: 0,
             pc: START_ADDRESS as u16,
@@ -32,8 +30,9 @@ impl Cpu {
             stack: Vec::new(),
             delay_timer: 0,
             sound_timer: 0,
-            // keypad: [0; 16],
-            display: [0; W * H],
+            _keypad: [0; 16],
+            vram: [false; W * H],
+            draw_flag: false,
         };
 
         s.reset_memory();
@@ -43,37 +42,63 @@ impl Cpu {
 
     fn reset_memory(&mut self) {
         let font: [u8; 80] = [
-            0xF0, 0x90, 0x90, 0x90, 0xF0, 0x20, 0x60, 0x20, 0x20, 0x70, 0xF0, 0x10, 0xF0, 0x80,
-            0xF0, 0xF0, 0x10, 0xF0, 0x10, 0xF0, 0x90, 0x90, 0xF0, 0x10, 0x10, 0xF0, 0x80, 0xF0,
-            0x10, 0xF0, 0xF0, 0x80, 0xF0, 0x90, 0xF0, 0xF0, 0x10, 0x20, 0x40, 0x40, 0xF0, 0x90,
-            0xF0, 0x90, 0xF0, 0xF0, 0x90, 0xF0, 0x10, 0xF0, 0xF0, 0x90, 0xF0, 0x90, 0x90, 0xE0,
-            0x90, 0xE0, 0x90, 0xE0, 0xF0, 0x80, 0x80, 0x80, 0xF0, 0xE0, 0x90, 0x90, 0x90, 0xE0,
-            0xF0, 0x80, 0xF0, 0x80, 0xF0, 0xF0, 0x80, 0xF0, 0x80, 0x80,
+            0xF0, 0x90, 0x90, 0x90,
+            0xF0, 0x20, 0x60, 0x20,
+            0x20, 0x70, 0xF0, 0x10,
+            0xF0, 0x80, 0xF0, 0xF0,
+            0x10, 0xF0, 0x10, 0xF0,
+            0x90, 0x90, 0xF0, 0x10,
+            0x10, 0xF0, 0x80, 0xF0,
+            0x10, 0xF0, 0xF0, 0x80,
+            0xF0, 0x90, 0xF0, 0xF0,
+            0x10, 0x20, 0x40, 0x40,
+            0xF0, 0x90, 0xF0, 0x90,
+            0xF0, 0xF0, 0x90, 0xF0,
+            0x10, 0xF0, 0xF0, 0x90,
+            0xF0, 0x90, 0x90, 0xE0,
+            0x90, 0xE0, 0x90, 0xE0,
+            0xF0, 0x80, 0x80, 0x80,
+            0xF0, 0xE0, 0x90, 0x90,
+            0x90, 0xE0, 0xF0, 0x80,
+            0xF0, 0x80, 0xF0, 0xF0,
+            0x80, 0xF0, 0x80, 0x80,
         ];
 
         for (i, &byte) in font.iter().enumerate() {
-            self.memory[i] = byte;
+            self.mem[i] = byte;
         }
 
-        self.memory[80..512].fill(0);
+        self.mem[80..512].fill(0);
 
+        // TODO delete this
         for x in 0..W * H {
-            self.display[x] = if x.is_multiple_of(2) { 0 } else { 255 }
+            self.vram[x] = x.is_multiple_of(2)
         }
     }
 
-    /// Executing a step of the emulator cycle
-    /// - reading next operation
-    /// - decoding  and executing upon next operation
-    ///
-    pub fn step(&mut self) {
+    /// Execute one CPU cycle
+    pub fn clk(&mut self) {
+        self.draw_flag = false;
+
         let opcode = self.read_opcode();
 
         self.decode_op(opcode);
+
+        // Update timers (CHIP-8 spec: they decrement at 60 Hz when > 0).
+        if self.delay_timer > 0 {
+            self.delay_timer -= 1;
+        }
+
+        if self.sound_timer > 0 {
+            self.sound_timer -= 1;
+            if self.sound_timer == 0 {
+                println!("beep!"); // Placeholder for actual audio.
+            }
+        }
     }
 
     fn read_opcode(&self) -> u16 {
-        let Cpu { memory, pc, .. } = self;
+        let Cpu { mem: memory, pc, .. } = self;
         let _pc = *pc as usize;
 
         let hi = memory[_pc] as u16;
@@ -83,52 +108,17 @@ impl Cpu {
     }
 
     /// Chip 8 - Instruction set
-    ///            00E0 - CLS
-    ///            00EE - RET
-    ///            0nnn - SYS addr
-    ///            1nnn - JP addr
-    ///            2nnn - CALL addr
-    ///            3xkk - SE Vx, byte
-    ///            4xkk - SNE Vx, byte
-    ///            5xy0 - SE Vx, Vy
-    ///            6xkk - LD Vx, byte
-    ///            7xkk - ADD Vx, byte
-    ///            8xy0 - LD Vx, Vy
-    ///            8xy1 - OR Vx, Vy
-    ///            8xy2 - AND Vx, Vy
-    ///            8xy3 - XOR Vx, Vy
-    ///            8xy4 - ADD Vx, Vy
-    ///            8xy5 - SUB Vx, Vy
-    ///            8xy6 - SHR Vx {, Vy}
-    ///            8xy7 - SUBN Vx, Vy
-    ///            8xyE - SHL Vx {, Vy}
-    ///            9xy0 - SNE Vx, Vy
-    ///            Annn - LD I, addr
-    ///            Bnnn - JP V0, addr
-    ///            Cxkk - RND Vx, byte
-    ///            Dxyn - DRW Vx, Vy, nibble
-    ///            Ex9E - SKP Vx
-    ///            ExA1 - SKNP Vx
-    ///            Fx07 - LD Vx, DT
-    ///            Fx0A - LD Vx, K
-    ///            Fx15 - LD DT, Vx
-    ///            Fx18 - LD ST, Vx
-    ///            Fx1E - ADD I, Vx
-    ///            Fx29 - LD F, Vx
-    ///            Fx33 - LD B, Vx
-    ///            Fx55 - LD [I], Vx
-    ///            Fx65 - LD Vx, [I]
     pub(super) fn decode_op(&mut self, opcode: u16) {
         match opcode {
-            // 0x00e0 - Clear display
+            // 0x00e0 - CLS Clear display
             0x00e0 => self.op_00e0(opcode),
-            // 0x00ee - Return from a subroutine.
+            // 0x00ee - RET Return from a subroutine.
             0x00ee => self.op_00ee(opcode),
-            // 0x0nnn - Ignored (old SYS addr)
+            // 0x0nnn - SYS Ignored (old SYS addr)
             0x0000..=0x0FFF => self.op_0nnn(opcode),
-            // 0x1nnn - Jump
+            // 0x1nnn - JP addr
             0x1000..=0x1FFF => self.op_1nnn(opcode),
-            // 0x2nnn - Call subroutine
+            // 0x2nnn - CALL addr
             0x2000..=0x2FFF => self.op_2nnn(opcode),
             // 0x3xkk - Skip next instruction if Vx = kk.
             0x3000..=0x3FFF => self.op_3xkk(opcode),
@@ -187,9 +177,10 @@ impl Cpu {
     }
 
     pub fn draw_flag(&self) -> bool {
-        true
+        self.draw_flag
     }
 
+    #[allow(dead_code)]
     pub fn load_rom(&mut self, filename: &str) -> Result<(), io::Error> {
         let rom_data = fs::read(filename)?;
 
@@ -201,7 +192,7 @@ impl Cpu {
                 exit(1);
             }
 
-            self.memory[START_ADDRESS + i] = byte;
+            self.mem[START_ADDRESS + i] = byte;
         }
 
         Ok(())
@@ -220,7 +211,7 @@ mod tests {
             .expect("Error loading fixture files");
 
         assert!(
-            chip.memory[START_ADDRESS..]
+            chip.mem[START_ADDRESS..]
                 .starts_with(&[0x12, 0x4e, 0xea, 0xac, 0xaa, 0xea, 0xce, 0xaa])
         );
     }
@@ -230,12 +221,12 @@ mod tests {
         let chip = Cpu::new();
 
         assert_eq!(chip.pc, START_ADDRESS as u16);
-        assert!(chip.memory.iter().all(|&b| b == 0));
+        assert!(chip.mem.iter().all(|&b| b == 0));
         assert!(chip.v.iter().all(|&r| r == 0));
         assert_eq!(chip.i, 0);
         assert_eq!(chip.sp, 0);
         assert!(chip.stack.iter().all(|&s| s == 0));
-        assert!(chip.display.iter().all(|&p| p == 0));
+        assert!(chip.vram.iter().all(|&p| p == false));
     }
     #[test]
     fn reset_memory() {
@@ -243,10 +234,10 @@ mod tests {
 
         chip.reset_memory();
 
-        assert!(chip.memory.iter().nth(80).iter().all(|&&b| b == 0));
-        assert_eq!(chip.memory[0], 0xf0);
-        assert_eq!(chip.memory[1], 0x90);
-        assert_eq!(chip.memory[77], 0xF0);
-        assert_eq!(chip.memory[79], 0x80);
+        assert!(chip.mem.iter().nth(80).iter().all(|&&b| b == 0));
+        assert_eq!(chip.mem[0], 0xf0);
+        assert_eq!(chip.mem[1], 0x90);
+        assert_eq!(chip.mem[77], 0xF0);
+        assert_eq!(chip.mem[79], 0x80);
     }
 }

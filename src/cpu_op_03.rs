@@ -1,3 +1,4 @@
+use crate::config::W;
 use crate::cpu::Cpu;
 use rand::random;
 
@@ -41,8 +42,36 @@ impl Cpu {
     /// to 0. If the sprite is positioned so part of it is outside the coordinates of the display,
     /// it wraps around to the opposite side of the screen. See instruction 8xy3 for more information
     /// on XOR, and section 2.4, Display, for more information on the Chip-8 screen and sprites.
-    pub(super) fn op_dxyn(&mut self, _opcode: u16) {
+    pub(super) fn op_dxyn(&mut self, opcode: u16) {
+        let x = (opcode & 0x0F00 >> 8) as usize;
+        let y = (opcode & 0x00F0 >> 4) as usize;
+        let _n = (opcode & 0x000F) as usize;
 
+        let base_vram = self.v[x] as usize + (self.v[y] as usize * W);
+        let base_mem = self.i as usize;
+
+
+        let pixels = format!("{:b}", self.mem[base_mem]);
+
+        for x in pixels.chars() {
+            self.vram[base_vram] ^= x != '0'
+        }
+
+        // for i in 0..n {
+        //     if base_vram + i <= W * H {
+        //         let pixels = format!("{:b}", self.memory[base_mem + i]);
+        //
+        //         for x in pixels.chars() {
+        //             self.display[base_vram + i] ^= if x == '0' { 0xff } else { 0x00 }
+        //         }
+        //
+        //         if self.display[base_vram + i] == 0 && self.memory[base_mem + i] == 0xff {
+        //             self.v[0xf] = 1;
+        //         } else {
+        //             self.v[0xf] = 0;
+        //         }
+        //     }
+        // }
     }
 
     /// Ex9E - SKP Vx
@@ -133,5 +162,4 @@ mod tests {
     fn decode_op_test_exa1() {
         assert!(false);
     }
-
 }
