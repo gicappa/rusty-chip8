@@ -1,6 +1,6 @@
+use crate::confg::{H, VRAM, W};
 use std::process::exit;
 use std::{fs, io};
-use crate::gpu::PIXELS;
 
 pub(crate) const MEMORY_SIZE: usize = 4096;
 pub(crate) const START_ADDRESS: usize = 0x200;
@@ -15,7 +15,7 @@ pub struct CPU {
     pub delay_timer: u8,
     pub sound_timer: u8,
     // pub keypad: [u8; 16],
-    pub display: [u8; PIXELS],
+    pub display: VRAM,
 }
 
 impl CPU {
@@ -33,7 +33,7 @@ impl CPU {
             delay_timer: 0,
             sound_timer: 0,
             // keypad: [0; 16],
-            display: [0; PIXELS],
+            display: [0; W * H],
         };
 
         s.reset_memory();
@@ -57,7 +57,7 @@ impl CPU {
 
         self.memory[80..512].fill(0);
 
-        for x in 0..PIXELS {
+        for x in 0..W * H {
             self.display[x] = if x.is_multiple_of(2) { 0 } else { 255 }
         }
     }

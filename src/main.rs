@@ -5,19 +5,21 @@ mod cpu_op_03;
 mod cpu_op_04;
 mod gpu;
 mod chip8;
+mod confg;
 
 use std::sync::mpsc;
 use std::thread;
 
 use crate::chip8::Chip8;
 use crate::cpu::CPU;
-use crate::gpu::{GPU,PIXELS};
-
+use crate::gpu::GPU;
+use crate::confg::VRAM;
 
 fn main() {
     println!("Chip8 Emulator Starting...");
 
-    let (tx, rx) = mpsc::channel::<[u8; PIXELS]>();
+    let (tx, rx) = mpsc::channel::<VRAM>();
+
     let cpu = CPU::new();
     let mut gpu: GPU = GPU::new(rx);
 

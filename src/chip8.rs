@@ -3,15 +3,15 @@ use std::thread::sleep;
 use std::time::{Duration, Instant};
 
 use crate::cpu::CPU;
-use crate::gpu::PIXELS;
+use crate::confg::VRAM;
 
 pub struct Chip8 {
     cpu: CPU,
-    tx :Sender<[u8; PIXELS]>
+    tx :Sender<VRAM>
 }
 
 impl Chip8 {
-    pub fn new(cpu: CPU, tx :Sender<[u8; PIXELS]>) -> Self {
+    pub fn new(cpu: CPU, tx :Sender<VRAM>) -> Self {
         Self {
             cpu,
             tx
