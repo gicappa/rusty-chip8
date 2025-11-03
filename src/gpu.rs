@@ -1,7 +1,8 @@
+use crate::confg::{H, VRAM, W};
 use minifb::{Scale, Window, WindowOptions};
-use std::sync::mpsc::{Receiver, TryRecvError};
+use std::sync::mpsc::RecvTimeoutError;
+use std::sync::mpsc::Receiver;
 use std::time::Duration;
-use crate::confg::{VRAM, W, H};
 
 pub struct GPU {
     rx: Receiver<VRAM>,
@@ -31,14 +32,14 @@ impl GPU {
             .limit_update_rate(Some(Duration::from_millis(4)));
 
         while self.window.is_open() {
-            match self.rx.try_recv() {
+            match self.rx.recv_timeout(Duration::from_micros(1666)) {
                 Ok(vram) => {
                     self.draw(&vram);
                 }
-                Err(TryRecvError::Empty) => {
+                Err(RecvTimeoutError::Timeout) => {
                     self.window.update();
                 }
-                Err(TryRecvError::Disconnected) => break, // producer is gone; exit loop
+                Err(RecvTimeoutError::Disconnected) => break, // producer is gone; exit loop
             }
         }
     }
