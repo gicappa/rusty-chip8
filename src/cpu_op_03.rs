@@ -96,7 +96,7 @@ mod tests {
         let mut chip = Cpu::new();
         chip.i = 0x444;
 
-        chip.decode_op(0xA555);
+        chip.decode_opcode(0xA555);
 
         assert_eq!(chip.i, 0x555);
     }
@@ -106,7 +106,7 @@ mod tests {
         chip.pc = 0x400;
         chip.v[0] = 0x10;
 
-        chip.decode_op(0xB500);
+        chip.decode_opcode(0xB500);
 
         assert_eq!(chip.pc, 0x510);
     }
@@ -116,7 +116,7 @@ mod tests {
         chip.v[5] = 0x77;
 
         for _ in 0..5 {
-            chip.decode_op(0xC500);
+            chip.decode_opcode(0xC500);
             assert_eq!(chip.v[5], 0x00);
         }
     }
@@ -128,7 +128,7 @@ mod tests {
         let mut res: Vec<u8> = Vec::new();
 
         for _ in 0..9 {
-            chip.decode_op(0xC5FF);
+            chip.decode_opcode(0xC5FF);
             res.push(chip.v[5]);
         }
 

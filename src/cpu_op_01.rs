@@ -131,7 +131,7 @@ mod tests {
         let last_pc = chip.pc;
         let last_sp = chip.sp;
 
-        chip.decode_op(0x0234);
+        chip.decode_opcode(0x0234);
 
         assert_eq!(chip.pc, last_pc);
         assert_eq!(chip.sp, last_sp);
@@ -139,7 +139,7 @@ mod tests {
     #[test]
     fn decode_op_test_00e0() {
         let mut cpu = Cpu::new();
-        cpu.decode_op(0x00e0);
+        cpu.decode_opcode(0x00e0);
         cpu.vram.iter().for_each(|item| {
             assert_eq!(*item, false);
         });
@@ -153,7 +153,7 @@ mod tests {
         chip.pc = 0x300;
         chip.stack.push(0x400);
 
-        chip.decode_op(0x00ee);
+        chip.decode_opcode(0x00ee);
         assert_eq!(chip.sp, 0);
         assert_eq!(chip.stack.len(), 0);
         assert_eq!(chip.pc, 0x400);
@@ -161,7 +161,7 @@ mod tests {
     #[test]
     fn decode_op_test_1nnn() {
         let mut chip = Cpu::new();
-        chip.decode_op(0x1234);
+        chip.decode_opcode(0x1234);
         assert_eq!(chip.pc, 0x234);
     }
     #[test]
@@ -169,7 +169,7 @@ mod tests {
         let mut chip = Cpu::new();
         chip.pc = 0x300;
 
-        chip.decode_op(0x2345);
+        chip.decode_opcode(0x2345);
 
         assert_eq!(chip.sp, 1);
         assert_eq!(chip.stack[0], 0x300);
@@ -181,7 +181,7 @@ mod tests {
         chip.pc = 0x300;
         chip.v[4] = 0x05;
 
-        chip.decode_op(0x3405);
+        chip.decode_opcode(0x3405);
 
         assert_eq!(chip.pc, 0x302);
     }
@@ -191,7 +191,7 @@ mod tests {
         chip.pc = 0x300;
         chip.v[4] = 0x05;
 
-        chip.decode_op(0x3403);
+        chip.decode_opcode(0x3403);
 
         assert_eq!(chip.pc, 0x300);
     }
@@ -201,7 +201,7 @@ mod tests {
         chip.pc = 0x300;
         chip.v[4] = 0x05;
 
-        chip.decode_op(0x4405);
+        chip.decode_opcode(0x4405);
 
         assert_eq!(chip.pc, 0x300);
     }
@@ -211,7 +211,7 @@ mod tests {
         chip.pc = 0x300;
         chip.v[4] = 0x05;
 
-        chip.decode_op(0x4403);
+        chip.decode_opcode(0x4403);
 
         assert_eq!(chip.pc, 0x302);
     }
@@ -221,7 +221,7 @@ mod tests {
         chip.pc = 0x300;
         chip.v[4] = 0x05;
         chip.v[0] = 0x05;
-        chip.decode_op(0x5400);
+        chip.decode_opcode(0x5400);
 
         assert_eq!(chip.pc, 0x302);
     }
@@ -232,7 +232,7 @@ mod tests {
         chip.v[4] = 0x05;
         chip.v[0] = 0x03;
 
-        chip.decode_op(0x5400);
+        chip.decode_opcode(0x5400);
 
         assert_eq!(chip.pc, 0x300);
     }
@@ -241,7 +241,7 @@ mod tests {
         let mut chip = Cpu::new();
         chip.v[4] = 0x05;
 
-        chip.decode_op(0x6483);
+        chip.decode_opcode(0x6483);
 
         assert_eq!(chip.v[4], 0x83);
     }
@@ -250,7 +250,7 @@ mod tests {
         let mut chip = Cpu::new();
         chip.v[4] = 0x05;
 
-        chip.decode_op(0x7483);
+        chip.decode_opcode(0x7483);
 
         assert_eq!(chip.v[4], 0x88);
     }
@@ -260,7 +260,7 @@ mod tests {
         chip.pc = 0x300;
         chip.v[4] = 0x05;
         chip.v[0] = 0x05;
-        chip.decode_op(0x9400);
+        chip.decode_opcode(0x9400);
 
         assert_eq!(chip.pc, 0x300);
     }
@@ -271,7 +271,7 @@ mod tests {
         chip.v[4] = 0x05;
         chip.v[0] = 0x03;
 
-        chip.decode_op(0x9400);
+        chip.decode_opcode(0x9400);
 
         assert_eq!(chip.pc, 0x302);
     }

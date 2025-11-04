@@ -40,51 +40,14 @@ impl Cpu {
         s
     }
 
-    fn reset_memory(&mut self) {
-        let font: [u8; 80] = [
-            0xF0, 0x90, 0x90, 0x90,
-            0xF0, 0x20, 0x60, 0x20,
-            0x20, 0x70, 0xF0, 0x10,
-            0xF0, 0x80, 0xF0, 0xF0,
-            0x10, 0xF0, 0x10, 0xF0,
-            0x90, 0x90, 0xF0, 0x10,
-            0x10, 0xF0, 0x80, 0xF0,
-            0x10, 0xF0, 0xF0, 0x80,
-            0xF0, 0x90, 0xF0, 0xF0,
-            0x10, 0x20, 0x40, 0x40,
-            0xF0, 0x90, 0xF0, 0x90,
-            0xF0, 0xF0, 0x90, 0xF0,
-            0x10, 0xF0, 0xF0, 0x90,
-            0xF0, 0x90, 0x90, 0xE0,
-            0x90, 0xE0, 0x90, 0xE0,
-            0xF0, 0x80, 0x80, 0x80,
-            0xF0, 0xE0, 0x90, 0x90,
-            0x90, 0xE0, 0xF0, 0x80,
-            0xF0, 0x80, 0xF0, 0xF0,
-            0x80, 0xF0, 0x80, 0x80,
-        ];
-
-        for (i, &byte) in font.iter().enumerate() {
-            self.mem[i] = byte;
-        }
-
-        self.mem[80..512].fill(0);
-
-        // TODO delete this
-        for x in 0..W * H {
-            self.vram[x] = x.is_multiple_of(2)
-        }
-    }
-
     /// Execute one CPU cycle
     pub fn clk(&mut self) {
         self.draw_flag = false;
 
-        let opcode = self.read_opcode();
+        let opcode = self.fetch_opcode();
 
-        self.decode_op(opcode);
+        self.decode_opcode(opcode);
 
-        // Update timers (CHIP-8 spec: they decrement at 60 Hz when > 0).
         if self.delay_timer > 0 {
             self.delay_timer -= 1;
         }
@@ -92,12 +55,15 @@ impl Cpu {
         if self.sound_timer > 0 {
             self.sound_timer -= 1;
             if self.sound_timer == 0 {
-                println!("beep!"); // Placeholder for actual audio.
+                // Placeholder for actual audio.
+                println!("beep!");
             }
         }
+
+        self.pc += 2;
     }
 
-    fn read_opcode(&self) -> u16 {
+    fn fetch_opcode(&self) -> u16 {
         let Cpu { mem: memory, pc, .. } = self;
         let _pc = *pc as usize;
 
@@ -108,7 +74,7 @@ impl Cpu {
     }
 
     /// Chip 8 - Instruction set
-    pub(super) fn decode_op(&mut self, opcode: u16) {
+    pub(super) fn decode_opcode(&mut self, opcode: u16) {
         match opcode {
             // 0x00e0 - CLS Clear display
             0x00e0 => self.op_00e0(opcode),
@@ -173,6 +139,38 @@ impl Cpu {
                 0x800e => self.op_8xye(opcode),
                 _ => println!("Not matching"),
             },
+        }
+    }
+
+    fn reset_memory(&mut self) {
+        let font: [u8; 80] = [
+            0xF0, 0x90, 0x90, 0x90, 0xF0,
+            0x20, 0x60, 0x20, 0x20, 0x70,
+            0xF0, 0x10, 0xF0, 0x80, 0xF0,
+            0xF0, 0x10, 0xF0, 0x10, 0xF0,
+            0x90, 0x90, 0xF0, 0x10, 0x10,
+            0xF0, 0x80, 0xF0, 0x10, 0xF0,
+            0xF0, 0x80, 0xF0, 0x90, 0xF0,
+            0xF0, 0x10, 0x20, 0x40, 0x40,
+            0xF0, 0x90, 0xF0, 0x90, 0xF0,
+            0xF0, 0x90, 0xF0, 0x10, 0xF0,
+            0xF0, 0x90, 0xF0, 0x90, 0x90,
+            0xE0, 0x90, 0xE0, 0x90, 0xE0,
+            0xF0, 0x80, 0x80, 0x80, 0xF0,
+            0xE0, 0x90, 0x90, 0x90, 0xE0,
+            0xF0, 0x80, 0xF0, 0x80, 0xF0,
+            0xF0, 0x80, 0xF0, 0x80, 0x80,
+        ];
+
+        for (i, &byte) in font.iter().enumerate() {
+            self.mem[i] = byte;
+        }
+
+        self.mem[80..512].fill(0);
+
+        // TODO delete this
+        for x in 0..W * H {
+            self.vram[x] = x.is_multiple_of(2)
         }
     }
 

@@ -147,7 +147,7 @@ mod tests {
         let mut chip = Cpu::new();
         chip.v[3] = 0x08;
         chip.v[4] = 0x10;
-        chip.decode_op(0x8340);
+        chip.decode_opcode(0x8340);
         assert_eq!(chip.v[3], 0x10);
         assert_eq!(chip.v[4], 0x10);
     }
@@ -157,7 +157,7 @@ mod tests {
         let mut chip = Cpu::new();
         chip.v[2] = 0x40;
         chip.v[3] = 0xA8;
-        chip.decode_op(0x8231);
+        chip.decode_opcode(0x8231);
         assert_eq!(chip.v[2], 0xE8);
     }
     #[test]
@@ -165,7 +165,7 @@ mod tests {
         let mut chip = Cpu::new();
         chip.v[2] = 0xE8;
         chip.v[3] = 0x44;
-        chip.decode_op(0x8232);
+        chip.decode_opcode(0x8232);
         assert_eq!(chip.v[2], 0x40);
     }
     #[test]
@@ -173,7 +173,7 @@ mod tests {
         let mut chip = Cpu::new();
         chip.v[5] = 0xE8;
         chip.v[6] = 0x56;
-        chip.decode_op(0x8563);
+        chip.decode_opcode(0x8563);
         assert_eq!(chip.v[5], 0xBE);
     }
     #[test]
@@ -181,7 +181,7 @@ mod tests {
         let mut chip = Cpu::new();
         chip.v[5] = 0x08;
         chip.v[6] = 0x56;
-        chip.decode_op(0x8564);
+        chip.decode_opcode(0x8564);
         assert_eq!(chip.v[5], 0x5E);
         assert_eq!(chip.v[15], 0x0);
     }
@@ -191,7 +191,7 @@ mod tests {
         let mut chip = Cpu::new();
         chip.v[5] = 0xFF;
         chip.v[6] = 0x04;
-        chip.decode_op(0x8564);
+        chip.decode_opcode(0x8564);
         assert_eq!(chip.v[5], 0x03);
         assert_eq!(chip.v[15], 0x1);
     }
@@ -201,7 +201,7 @@ mod tests {
         let mut chip = Cpu::new();
         chip.v[5] = 0x5F;
         chip.v[6] = 0x14;
-        chip.decode_op(0x8565);
+        chip.decode_opcode(0x8565);
         assert_eq!(chip.v[5], 0x4B);
         assert_eq!(chip.v[15], 0x1);
     }
@@ -211,7 +211,7 @@ mod tests {
         let mut chip = Cpu::new();
         chip.v[5] = 0x14;
         chip.v[6] = 0x5F;
-        chip.decode_op(0x8565);
+        chip.decode_opcode(0x8565);
         assert_eq!(chip.v[5], 0x4B);
         assert_eq!(chip.v[15], 0x0);
     }
@@ -221,7 +221,7 @@ mod tests {
         let mut chip = Cpu::new();
         chip.v[5] = 0xEE;
         chip.v[6] = 0x5F;
-        chip.decode_op(0x8566);
+        chip.decode_opcode(0x8566);
         assert_eq!(chip.v[5], 0x77);
         assert_eq!(chip.v[6], 0x77);
         assert_eq!(chip.v[0xF], 1);
@@ -232,7 +232,7 @@ mod tests {
         let mut chip = Cpu::new();
         chip.v[5] = 0xE0;
         chip.v[6] = 0x34;
-        chip.decode_op(0x8566);
+        chip.decode_opcode(0x8566);
         assert_eq!(chip.v[5], 0x70);
         assert_eq!(chip.v[6], 0x70);
         assert_eq!(chip.v[0xF], 0);
@@ -243,7 +243,7 @@ mod tests {
         let mut chip = Cpu::new();
         chip.v[5] = 0x14;
         chip.v[6] = 0x5F;
-        chip.decode_op(0x8567);
+        chip.decode_opcode(0x8567);
         assert_eq!(chip.v[5], 0x4B);
         assert_eq!(chip.v[15], 0x1);
     }
@@ -253,7 +253,7 @@ mod tests {
         let mut chip = Cpu::new();
         chip.v[5] = 0x5F;
         chip.v[6] = 0x14;
-        chip.decode_op(0x8567);
+        chip.decode_opcode(0x8567);
         assert_eq!(chip.v[5], 0x4B);
         assert_eq!(chip.v[15], 0x0);
     }
@@ -263,7 +263,7 @@ mod tests {
         let mut chip = Cpu::new();
         chip.v[5] = 0x81;
         chip.v[6] = 0x5F;
-        chip.decode_op(0x856e);
+        chip.decode_opcode(0x856e);
         assert_eq!(chip.v[5], 0x02);
         assert_eq!(chip.v[6], 0x02);
         assert_eq!(chip.v[0xF], 0);
@@ -274,7 +274,7 @@ mod tests {
         let mut chip = Cpu::new();
         chip.v[5] = 0x77;
         chip.v[6] = 0x5F;
-        chip.decode_op(0x856e);
+        chip.decode_opcode(0x856e);
         assert_eq!(chip.v[5], 0xEE);
         assert_eq!(chip.v[6], 0xEE);
         assert_eq!(chip.v[0xF], 1);
