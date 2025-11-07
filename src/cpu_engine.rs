@@ -164,7 +164,7 @@ mod tests {
     #[test]
     fn new_initializes_state() {
         let mut cpu = Cpu::new();
-        let mut cpu_engine = CpuEngine::new(&mut cpu);
+        let cpu_engine = CpuEngine::new(&mut cpu);
 
         assert_eq!(cpu_engine.cpu.pc, START_ADDRESS as u16);
         assert!(cpu_engine.cpu.mem.iter().all(|&b| b == 0));

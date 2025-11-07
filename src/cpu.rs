@@ -1,5 +1,4 @@
 use crate::config::{H, VRAM, W};
-use crate::cpu_engine::CpuEngine;
 
 pub(crate) const MEMORY_SIZE: usize = 4096;
 pub(crate) const START_ADDRESS: usize = 0x200;
@@ -15,7 +14,6 @@ pub struct Cpu {
     pub sound_timer: u8,
     pub _keypad: [u8; 16],
     pub vram: VRAM,
-    pub(super) draw_flag: bool,
 }
 
 impl Cpu {
@@ -31,7 +29,6 @@ impl Cpu {
             sound_timer: 0,
             _keypad: [0; 16],
             vram: [false; W * H],
-            draw_flag: false,
         };
 
         s.reset_memory();
