@@ -1,7 +1,7 @@
 use crate::config::{H, VRAM, W};
 use minifb::{Scale, Window, WindowOptions};
+use std::process;
 use std::sync::mpsc::{Receiver, RecvTimeoutError};
-use std::thread::sleep;
 use std::time::Duration;
 
 pub struct Gpu {
@@ -16,9 +16,11 @@ impl Gpu {
 
         opts.scale = Scale::X16;
 
-        let window = Window::new(
+        let mut window = Window::new(
             "Rusty Chip-8 Emulator", W, H, opts)
             .unwrap_or_else(|e| { panic!("{}", e); });
+        window.set_background_color(0, 0, 0);
+        window.set_target_fps(60);
 
         Gpu {
             rx,
@@ -27,23 +29,20 @@ impl Gpu {
         }
     }
 
-    pub fn start(&mut self) {
-        self.window.set_background_color(0, 0, 0);
-        self.window.set_target_fps(60);
-
-        while self.window.is_open() {
-            while self.window.is_open() {
-                match self.rx.recv_timeout(Duration::from_micros(1666)) {
-                    Ok(vram) => {
-                        self.draw(&vram);
-                    }
-                    Err(RecvTimeoutError::Timeout) => {
-                        self.window.update();
-                    }
-                    Err(RecvTimeoutError::Disconnected) => break,
-                }
-                sleep(Duration::from_millis(10));
+    pub fn clk(&mut self) {
+        if !self.window.is_open() {
+            process::exit(0);
+        }
+        
+        match self.rx.recv_timeout(Duration::from_micros(1666)) {
+            Ok(vram) => {
+                self.draw(&vram);
             }
+            Err(RecvTimeoutError::Timeout) => {
+                self.window.update();
+            }
+            Err(RecvTimeoutError::Disconnected) =>
+                println!("Disconnected")
         }
     }
 
