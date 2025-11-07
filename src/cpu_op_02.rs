@@ -1,6 +1,6 @@
-use crate::cpu::Cpu;
+use crate::cpu_engine::CpuEngine;
 
-impl Cpu {
+impl<'a> CpuEngine<'a> {
     // Operations //////////////////////////////////////////////////////////////
 
     /// 8xy0 - LD Vx, Vy
@@ -9,7 +9,7 @@ impl Cpu {
     pub(super) fn op_8xy0(&mut self, opcode: u16) {
         let (x, y) = Self::regs_xy(opcode);
 
-        self.v[x] = self.v[y];
+        self.cpu.v[x] = self.cpu.v[y];
     }
 
     /// 8xy1 - OR Vx, Vy
@@ -18,7 +18,7 @@ impl Cpu {
     pub(super) fn op_8xy1(&mut self, opcode: u16) {
         let (x, y) = Self::regs_xy(opcode);
 
-        self.v[x] |= self.v[y];
+        self.cpu.v[x] |= self.cpu.v[y];
     }
 
     /// 8xy2 - AND Vx, Vy
@@ -29,7 +29,7 @@ impl Cpu {
     pub(super) fn op_8xy2(&mut self, opcode: u16) {
         let (x, y) = Self::regs_xy(opcode);
 
-        self.v[x] &= self.v[y];
+        self.cpu.v[x] &= self.cpu.v[y];
     }
 
     /// 8xy3 - XOR Vx, Vy
@@ -40,7 +40,7 @@ impl Cpu {
     pub(super) fn op_8xy3(&mut self, opcode: u16) {
         let (x, y) = Self::regs_xy(opcode);
 
-        self.v[x] ^= self.v[y]
+        self.cpu.v[x] ^= self.cpu.v[y]
     }
 
     /// 8xy4 - ADD Vx, Vy
@@ -50,9 +50,9 @@ impl Cpu {
     pub(super) fn op_8xy4(&mut self, opcode: u16) {
         let (x, y) = Self::regs_xy(opcode);
 
-        let (sum, carry) = self.v[x].overflowing_add(self.v[y]);
-        self.v[x] = sum;
-        self.v[0xF] = if carry { 1 } else { 0 }
+        let (sum, carry) = self.cpu.v[x].overflowing_add(self.cpu.v[y]);
+        self.cpu.v[x] = sum;
+        self.cpu.v[0xF] = if carry { 1 } else { 0 }
     }
 
     /// 8xy5 - SUB Vx, Vy
@@ -62,13 +62,13 @@ impl Cpu {
     pub(super) fn op_8xy5(&mut self, opcode: u16) {
         let (x, y) = Self::regs_xy(opcode);
 
-        let (diff, carry) = self.v[x].overflowing_sub(self.v[y]);
+        let (diff, carry) = self.cpu.v[x].overflowing_sub(self.cpu.v[y]);
         if carry {
-            self.v[x] = self.v[y] - self.v[x];
-            self.v[0xF] = 0;
+            self.cpu.v[x] = self.cpu.v[y] - self.cpu.v[x];
+            self.cpu.v[0xF] = 0;
         } else {
-            self.v[x] = diff;
-            self.v[0xF] = 1;
+            self.cpu.v[x] = diff;
+            self.cpu.v[0xF] = 1;
         }
     }
 
@@ -82,9 +82,9 @@ impl Cpu {
     pub(super) fn op_8xy6(&mut self, opcode: u16) {
         let (x, y) = Self::regs_xy(opcode);
 
-        self.v[x] = self.v[x] >> 1;
-        self.v[y] = self.v[x];
-        self.v[0xF] = self.v[x] & 0x1;
+        self.cpu.v[x] = self.cpu.v[x] >> 1;
+        self.cpu.v[y] = self.cpu.v[x];
+        self.cpu.v[0xF] = self.cpu.v[x] & 0x1;
     }
 
     /// 8xy7 - SUBN Vx, Vy
@@ -94,13 +94,13 @@ impl Cpu {
     pub(super) fn op_8xy7(&mut self, opcode: u16) {
         let (x, y) = Self::regs_xy(opcode);
 
-        let (diff, carry) = self.v[y].overflowing_sub(self.v[x]);
+        let (diff, carry) = self.cpu.v[y].overflowing_sub(self.cpu.v[x]);
         if carry {
-            self.v[x] = self.v[x] - self.v[y];
-            self.v[0xF] = 0;
+            self.cpu.v[x] = self.cpu.v[x] - self.cpu.v[y];
+            self.cpu.v[0xF] = 0;
         } else {
-            self.v[x] = diff;
-            self.v[0xF] = 1;
+            self.cpu.v[x] = diff;
+            self.cpu.v[0xF] = 1;
         }
     }
 
@@ -114,9 +114,9 @@ impl Cpu {
     pub(super) fn op_8xye(&mut self, opcode: u16) {
         let (x, y) = Self::regs_xy(opcode);
 
-        self.v[x] = self.v[x] << 1;
-        self.v[y] = self.v[x];
-        self.v[0xF] = (self.v[x] & 0x8) >> 3;
+        self.cpu.v[x] = self.cpu.v[x] << 1;
+        self.cpu.v[y] = self.cpu.v[x];
+        self.cpu.v[0xF] = (self.cpu.v[x] & 0x8) >> 3;
     }
 
     // Helper //////////////////////////////////////////////////////////////////
@@ -132,151 +132,166 @@ impl Cpu {
 
 #[cfg(test)]
 mod tests {
+    use crate::cpu::Cpu;
     use super::*;
 
     #[test]
     fn regs_xy_extracts_indices() {
         // opcode 0x8AB1 -> x = A (10), y = B (11)
-        let (x, y) = Cpu::regs_xy(0x8AB1);
+        let (x, y) = CpuEngine::regs_xy(0x8AB1);
         assert_eq!(x, 0xA);
         assert_eq!(y, 0xB);
     }
 
     #[test]
     fn decode_op_test_8xy0() {
-        let mut chip = Cpu::new();
-        chip.v[3] = 0x08;
-        chip.v[4] = 0x10;
-        chip.decode_opcode(0x8340);
-        assert_eq!(chip.v[3], 0x10);
-        assert_eq!(chip.v[4], 0x10);
+        let mut cpu = Cpu::new();
+        let mut cpu_engine = CpuEngine::new(&mut cpu);
+        cpu_engine.cpu.v[3] = 0x08;
+        cpu_engine.cpu.v[4] = 0x10;
+        cpu_engine.decode_opcode(0x8340);
+        assert_eq!(cpu_engine.cpu.v[3], 0x10);
+        assert_eq!(cpu_engine.cpu.v[4], 0x10);
     }
 
     #[test]
     fn decode_op_test_8xy1() {
-        let mut chip = Cpu::new();
-        chip.v[2] = 0x40;
-        chip.v[3] = 0xA8;
-        chip.decode_opcode(0x8231);
-        assert_eq!(chip.v[2], 0xE8);
+        let mut cpu = Cpu::new();
+        let mut cpu_engine = CpuEngine::new(&mut cpu);
+        cpu_engine.cpu.v[2] = 0x40;
+        cpu_engine.cpu.v[3] = 0xA8;
+        cpu_engine.decode_opcode(0x8231);
+        assert_eq!(cpu_engine.cpu.v[2], 0xE8);
     }
     #[test]
     fn decode_op_test_8xy2() {
-        let mut chip = Cpu::new();
-        chip.v[2] = 0xE8;
-        chip.v[3] = 0x44;
-        chip.decode_opcode(0x8232);
-        assert_eq!(chip.v[2], 0x40);
+        let mut cpu = Cpu::new();
+        let mut cpu_engine = CpuEngine::new(&mut cpu);
+        cpu_engine.cpu.v[2] = 0xE8;
+        cpu_engine.cpu.v[3] = 0x44;
+        cpu_engine.decode_opcode(0x8232);
+        assert_eq!(cpu_engine.cpu.v[2], 0x40);
     }
     #[test]
     fn decode_op_test_8xy3() {
-        let mut chip = Cpu::new();
-        chip.v[5] = 0xE8;
-        chip.v[6] = 0x56;
-        chip.decode_opcode(0x8563);
-        assert_eq!(chip.v[5], 0xBE);
+        let mut cpu = Cpu::new();
+        let mut cpu_engine = CpuEngine::new(&mut cpu);
+        cpu_engine.cpu.v[5] = 0xE8;
+        cpu_engine.cpu.v[6] = 0x56;
+        cpu_engine.decode_opcode(0x8563);
+        assert_eq!(cpu_engine.cpu.v[5], 0xBE);
     }
     #[test]
     fn decode_op_test_8xy4_no_carry() {
-        let mut chip = Cpu::new();
-        chip.v[5] = 0x08;
-        chip.v[6] = 0x56;
-        chip.decode_opcode(0x8564);
-        assert_eq!(chip.v[5], 0x5E);
-        assert_eq!(chip.v[15], 0x0);
+        let mut cpu = Cpu::new();
+        let mut cpu_engine = CpuEngine::new(&mut cpu);
+        cpu_engine.cpu.v[5] = 0x08;
+        cpu_engine.cpu.v[6] = 0x56;
+        cpu_engine.decode_opcode(0x8564);
+        assert_eq!(cpu_engine.cpu.v[5], 0x5E);
+        assert_eq!(cpu_engine.cpu.v[15], 0x0);
     }
 
     #[test]
     fn decode_op_test_8xy4_with_carry() {
-        let mut chip = Cpu::new();
-        chip.v[5] = 0xFF;
-        chip.v[6] = 0x04;
-        chip.decode_opcode(0x8564);
-        assert_eq!(chip.v[5], 0x03);
-        assert_eq!(chip.v[15], 0x1);
+        let mut cpu = Cpu::new();
+        let mut cpu_engine = CpuEngine::new(&mut cpu);
+        cpu_engine.cpu.v[5] = 0xFF;
+        cpu_engine.cpu.v[6] = 0x04;
+        cpu_engine.decode_opcode(0x8564);
+        assert_eq!(cpu_engine.cpu.v[5], 0x03);
+        assert_eq!(cpu_engine.cpu.v[15], 0x1);
     }
 
     #[test]
     fn decode_op_test_8xy5_with_carry() {
-        let mut chip = Cpu::new();
-        chip.v[5] = 0x5F;
-        chip.v[6] = 0x14;
-        chip.decode_opcode(0x8565);
-        assert_eq!(chip.v[5], 0x4B);
-        assert_eq!(chip.v[15], 0x1);
+        let mut cpu = Cpu::new();
+        let mut cpu_engine = CpuEngine::new(&mut cpu);
+        cpu_engine.cpu.v[5] = 0x5F;
+        cpu_engine.cpu.v[6] = 0x14;
+        cpu_engine.decode_opcode(0x8565);
+        assert_eq!(cpu_engine.cpu.v[5], 0x4B);
+        assert_eq!(cpu_engine.cpu.v[15], 0x1);
     }
 
     #[test]
     fn decode_op_test_8xy5_no_carry() {
-        let mut chip = Cpu::new();
-        chip.v[5] = 0x14;
-        chip.v[6] = 0x5F;
-        chip.decode_opcode(0x8565);
-        assert_eq!(chip.v[5], 0x4B);
-        assert_eq!(chip.v[15], 0x0);
+        let mut cpu = Cpu::new();
+        let mut cpu_engine = CpuEngine::new(&mut cpu);
+        cpu_engine.cpu.v[5] = 0x14;
+        cpu_engine.cpu.v[6] = 0x5F;
+        cpu_engine.decode_opcode(0x8565);
+        assert_eq!(cpu_engine.cpu.v[5], 0x4B);
+        assert_eq!(cpu_engine.cpu.v[15], 0x0);
     }
 
     #[test]
     fn decode_op_test_8xy6_lsb_1() {
-        let mut chip = Cpu::new();
-        chip.v[5] = 0xEE;
-        chip.v[6] = 0x5F;
-        chip.decode_opcode(0x8566);
-        assert_eq!(chip.v[5], 0x77);
-        assert_eq!(chip.v[6], 0x77);
-        assert_eq!(chip.v[0xF], 1);
+        let mut cpu = Cpu::new();
+        let mut cpu_engine = CpuEngine::new(&mut cpu);
+        cpu_engine.cpu.v[5] = 0xEE;
+        cpu_engine.cpu.v[6] = 0x5F;
+        cpu_engine.decode_opcode(0x8566);
+        assert_eq!(cpu_engine.cpu.v[5], 0x77);
+        assert_eq!(cpu_engine.cpu.v[6], 0x77);
+        assert_eq!(cpu_engine.cpu.v[0xF], 1);
     }
 
     #[test]
     fn decode_op_test_8xy6_lsb_0() {
-        let mut chip = Cpu::new();
-        chip.v[5] = 0xE0;
-        chip.v[6] = 0x34;
-        chip.decode_opcode(0x8566);
-        assert_eq!(chip.v[5], 0x70);
-        assert_eq!(chip.v[6], 0x70);
-        assert_eq!(chip.v[0xF], 0);
+        let mut cpu = Cpu::new();
+        let mut cpu_engine = CpuEngine::new(&mut cpu);
+        cpu_engine.cpu.v[5] = 0xE0;
+        cpu_engine.cpu.v[6] = 0x34;
+        cpu_engine.decode_opcode(0x8566);
+        assert_eq!(cpu_engine.cpu.v[5], 0x70);
+        assert_eq!(cpu_engine.cpu.v[6], 0x70);
+        assert_eq!(cpu_engine.cpu.v[0xF], 0);
     }
 
     #[test]
     fn decode_op_test_8xy7_with_carry() {
-        let mut chip = Cpu::new();
-        chip.v[5] = 0x14;
-        chip.v[6] = 0x5F;
-        chip.decode_opcode(0x8567);
-        assert_eq!(chip.v[5], 0x4B);
-        assert_eq!(chip.v[15], 0x1);
+        let mut cpu = Cpu::new();
+        let mut cpu_engine = CpuEngine::new(&mut cpu);
+        cpu_engine.cpu.v[5] = 0x14;
+        cpu_engine.cpu.v[6] = 0x5F;
+        cpu_engine.decode_opcode(0x8567);
+        assert_eq!(cpu_engine.cpu.v[5], 0x4B);
+        assert_eq!(cpu_engine.cpu.v[15], 0x1);
     }
 
     #[test]
     fn decode_op_test_8xy7_no_carry() {
-        let mut chip = Cpu::new();
-        chip.v[5] = 0x5F;
-        chip.v[6] = 0x14;
-        chip.decode_opcode(0x8567);
-        assert_eq!(chip.v[5], 0x4B);
-        assert_eq!(chip.v[15], 0x0);
+        let mut cpu = Cpu::new();
+        let mut cpu_engine = CpuEngine::new(&mut cpu);
+        cpu_engine.cpu.v[5] = 0x5F;
+        cpu_engine.cpu.v[6] = 0x14;
+        cpu_engine.decode_opcode(0x8567);
+        assert_eq!(cpu_engine.cpu.v[5], 0x4B);
+        assert_eq!(cpu_engine.cpu.v[15], 0x0);
     }
 
     #[test]
     fn decode_op_test_8xye_lsb_0() {
-        let mut chip = Cpu::new();
-        chip.v[5] = 0x81;
-        chip.v[6] = 0x5F;
-        chip.decode_opcode(0x856e);
-        assert_eq!(chip.v[5], 0x02);
-        assert_eq!(chip.v[6], 0x02);
-        assert_eq!(chip.v[0xF], 0);
+        let mut cpu = Cpu::new();
+        let mut cpu_engine = CpuEngine::new(&mut cpu);
+        cpu_engine.cpu.v[5] = 0x81;
+        cpu_engine.cpu.v[6] = 0x5F;
+        cpu_engine.decode_opcode(0x856e);
+        assert_eq!(cpu_engine.cpu.v[5], 0x02);
+        assert_eq!(cpu_engine.cpu.v[6], 0x02);
+        assert_eq!(cpu_engine.cpu.v[0xF], 0);
     }
 
     #[test]
     fn decode_op_test_8xye_lsb_1() {
-        let mut chip = Cpu::new();
-        chip.v[5] = 0x77;
-        chip.v[6] = 0x5F;
-        chip.decode_opcode(0x856e);
-        assert_eq!(chip.v[5], 0xEE);
-        assert_eq!(chip.v[6], 0xEE);
-        assert_eq!(chip.v[0xF], 1);
+        let mut cpu = Cpu::new();
+        let mut cpu_engine = CpuEngine::new(&mut cpu);
+        cpu_engine.cpu.v[5] = 0x77;
+        cpu_engine.cpu.v[6] = 0x5F;
+        cpu_engine.decode_opcode(0x856e);
+        assert_eq!(cpu_engine.cpu.v[5], 0xEE);
+        assert_eq!(cpu_engine.cpu.v[6], 0xEE);
+        assert_eq!(cpu_engine.cpu.v[0xF], 1);
     }
 }
