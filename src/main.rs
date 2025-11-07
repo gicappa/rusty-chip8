@@ -19,10 +19,9 @@ use std::sync::mpsc;
 fn main() {
     let (tx, rx) = mpsc::channel::<VRAM>();
 
-    let mut gpu = Gpu::new(rx);
     let mut cpu = Cpu::new();
+    let mut gpu = Gpu::new(rx);
     let mut clock = Clock::new();
-
 
     loop {
         clock.start();
