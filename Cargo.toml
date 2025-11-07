@@ -9,7 +9,6 @@ minifb = "0.28.0"
 anyhow = "1.0.100"
 crossterm = "0.29.0"
 ratatui = "0.29.0"
-log = "0.4.28"
 
 [profile.dev]
 opt-level = 0
