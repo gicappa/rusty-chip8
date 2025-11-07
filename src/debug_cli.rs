@@ -1,14 +1,13 @@
 use crate::cpu::Cpu;
 use anyhow::Result;
-use crossterm::{
-    event::{DisableMouseCapture, EnableMouseCapture},
-    execute, terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
-};
+use crossterm::event::{Event, KeyCode};
+use crossterm::{event, event::{DisableMouseCapture, EnableMouseCapture}, execute, terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen}};
 use ratatui::{
     prelude::*,
-    // widgets::{Block, Borders, Paragraph, Table, Row, Cell}
+    widgets::{Block, Borders, Cell, Paragraph, Row, Table},
 };
 use std::io::Stdout;
+use std::time::Duration;
 use std::{collections::VecDeque, io, sync::mpsc, time::Instant};
 
 pub struct DebugCli<'a> {
@@ -46,7 +45,76 @@ impl<'a> DebugCli<'a> {
         }
     }
 
-    fn tick(&mut self) {}
+    pub fn tick(&mut self) -> Result<()> {
+        // draw
+        self.terminal.draw(|f| {
+            let size = f.area();
+
+            // horizontal layout: 50% log | 30% register | 20% fps
+            let chunks = Layout::default()
+                .direction(Direction::Horizontal)
+                .constraints([
+                    Constraint::Percentage(50),
+                    Constraint::Percentage(30),
+                    Constraint::Percentage(20),
+                ])
+                .split(size);
+
+            // Logs
+            let log_text = self.logs.iter().rev().take(200).cloned().collect::<Vec<_>>().join("\n");
+            let logs = Paragraph::new(log_text)
+                .block(Block::default().borders(Borders::ALL).title(" Logs "));
+            f.render_widget(logs, chunks[0]);
+
+            // Registers
+            let mut rows: Vec<Row> = Vec::new();
+            rows.push(Row::new(vec![
+                Cell::from("PC"), Cell::from(format!("{:#06X}", self.cpu.pc)),
+                Cell::from("SP"), Cell::from(format!("{}", self.cpu.sp)),
+                Cell::from(" I"), Cell::from(format!("{:#06X}", self.cpu.i)),
+            ]));
+
+            for r in 0..2 {
+                let mut cells = Vec::new();
+                for c in 0..8 {
+                    let idx = r * 8 + c;
+                    cells.push(Cell::from(format!("V{:X}", idx)));
+                    cells.push(Cell::from(format!("{:#04X}", self.cpu.v[idx])));
+                }
+                rows.push(Row::new(cells));
+            }
+
+            let regs = Table::new(rows, [
+                Constraint::Length(3), Constraint::Length(8),
+                Constraint::Length(3), Constraint::Length(8),
+                Constraint::Length(2), Constraint::Length(8),
+            ])
+                .block(Block::default().borders(Borders::ALL).title(" CPU "));
+
+            f.render_widget(regs, chunks[1]);
+
+            // FPS
+            // let avg = self.avg_fps(); error!!!
+            let fps_text = format!(
+                "FPS avg: {:>5.1}\nLast {} frame:\n{}",
+                10,
+                self.fps_history.len(),
+                ascii_sparkline(&self.fps_history, 10.0, 120.0)
+            );
+            let fps = Paragraph::new(fps_text)
+                .block(Block::default().borders(Borders::ALL).title(" Performance "));
+            f.render_widget(fps, chunks[2]);
+        })?;
+        while event::poll(Duration::from_millis(0))? {
+            if let Event::Key(k) = event::read()? {
+                if k.code == KeyCode::Char('q') || k.code == KeyCode::Esc {
+                    break;
+                }
+            }
+        }
+
+        Ok(())
+    }
 
     fn avg_fps(&self) -> f32 {
         if self.fps_history.is_empty() { return 0.0; }
@@ -62,106 +130,6 @@ impl<'a> DebugCli<'a> {
         // res
         Ok(())
     }
-
-    pub(crate) fn start(&self) {
-        todo!()
-    }
-}
-
-fn run_app<B: Backend>(_terminal: &mut Terminal<B>, _rx: mpsc::Receiver<String>) -> Result<()> {
-    // let mut app = App::new(CPU::new());
-    // let target_frame = Duration::from_millis(16); // ~60 FPS
-    //
-    // 'outer: loop {
-    //     let frame_start = Instant::now();
-    //
-    //     // raccogli log non bloccando
-    //     for line in rx.try_iter() {
-    //         app.push_log(line);
-    //     }
-    //
-    //     // “tick” app/emulatore
-    //     app.tick();
-    //
-    //     // draw
-    //     terminal.draw(|f| {
-    //         let size = f.area();
-    //
-    //         // layout orizzontale: 50% log | 30% registri | 20% fps
-    //         let chunks = Layout::default()
-    //             .direction(Direction::Horizontal)
-    //             .constraints([
-    //                 Constraint::Percentage(50),
-    //                 Constraint::Percentage(30),
-    //                 Constraint::Percentage(20),
-    //             ])
-    //             .split(size);
-    //
-    //         // LOGS
-    //         let log_text = app.logs.iter().rev().take(200).cloned().collect::<Vec<_>>().join("\n");
-    //         let logs = Paragraph::new(log_text)
-    //             .block(Block::default().borders(Borders::ALL).title(" Logs "));
-    //         f.render_widget(logs, chunks[0]);
-    //
-    //         // REGISTRI
-    //         let mut rows: Vec<Row> = Vec::new();
-    //         rows.push(Row::new(vec![
-    //             Cell::from("PC"), Cell::from(format!("{:#06X}", app.cpu.pc)),
-    //             Cell::from("SP"), Cell::from(format!("{}", app.cpu.sp)),
-    //             Cell::from(" I"), Cell::from(format!("{:#06X}", app.cpu.i)),
-    //         ]));
-    //
-    //         // V0..VF su più righe (8 per riga)
-    //         for r in 0..2 {
-    //             let mut cells = Vec::new();
-    //             for c in 0..8 {
-    //                 let idx = r * 8 + c;
-    //                 cells.push(Cell::from(format!("V{:X}", idx)));
-    //                 cells.push(Cell::from(format!("{:#04X}", app.cpu.v[idx])));
-    //             }
-    //             rows.push(Row::new(cells));
-    //         }
-    //
-    //         let regs = Table::new(rows, [
-    //             Constraint::Length(3), Constraint::Length(8),
-    //             Constraint::Length(3), Constraint::Length(8),
-    //             Constraint::Length(2), Constraint::Length(8),
-    //         ])
-    //             .block(Block::default().borders(Borders::ALL).title(" CPU "));
-    //
-    //         f.render_widget(regs, chunks[1]);
-    //
-    //         // FPS
-    //         let avg = app.avg_fps();
-    //         let fps_text = format!(
-    //             "FPS medio: {:>5.1}\nUltimi {} frame:\n{}",
-    //             avg,
-    //             app.fps_history.len(),
-    //             // piccola sparklines ASCII
-    //             ascii_sparkline(&app.fps_history, 10.0, 120.0)
-    //         );
-    //         let fps = Paragraph::new(fps_text)
-    //             .block(Block::default().borders(Borders::ALL).title(" Performance "));
-    //         f.render_widget(fps, chunks[2]);
-    //     })?;
-    //
-    //     // input non bloccante; 'q' per uscire
-    //     while event::poll(Duration::from_millis(0))? {
-    //         if let Event::Key(k) = event::read()? {
-    //             if k.code == KeyCode::Char('q') || k.code == KeyCode::Esc {
-    //                 break 'outer;
-    //             }
-    //         }
-    //     }
-    //
-    //     // semplice frame cap a ~60fps
-    //     let elapsed = frame_start.elapsed();
-    //     if elapsed < target_frame {
-    //         thread::sleep(target_frame - elapsed);
-    //     }
-    // }
-    //
-    Ok(())
 }
 
 // Sparklines ASCII super semplici; min/max clampati

@@ -76,9 +76,11 @@ impl Cpu {
 
     /// Ex9E - SKP Vx
     /// Skip next instruction if key with the value of Vx is pressed.
-    /// Checks the keyboard, and if the key corresponding to the value of Vx is currently in the down
-    /// position, PC is increased by 2.
-    pub(super) fn op_ex9e(&mut self, _opcode: u16) {}
+    /// Checks the keyboard, and if the key corresponding to the value of
+    /// Vx is currently in the down position, PC is increased by 2.
+    pub(super) fn op_ex9e(&mut self, opcode: u16) {
+        
+    }
 
     /// ExA1 - SKNP Vx
     /// Skip next instruction if key with the value of Vx is not pressed.

@@ -178,6 +178,12 @@ impl Cpu {
         self.draw_flag
     }
 
+    pub fn set_key(&mut self, key: u8, pressed: bool) {
+        if key < 16 {
+            self._keypad[key as usize] = if pressed { 1 } else { 0 };
+        }
+    }
+
     #[allow(dead_code)]
     pub fn load_rom(&mut self, filename: &str) -> Result<(), io::Error> {
         let rom_data = fs::read(filename)?;

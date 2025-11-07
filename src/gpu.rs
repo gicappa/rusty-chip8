@@ -1,17 +1,19 @@
 use crate::config::{H, VRAM, W};
-use minifb::{Scale, Window, WindowOptions};
-use std::sync::mpsc::{Receiver, RecvTimeoutError};
+
+use minifb::{Scale, Window, WindowOptions, Key};
+use std::sync::mpsc::{Receiver, RecvTimeoutError, Sender};
 use std::thread::sleep;
 use std::time::Duration;
 
 pub struct Gpu {
     rx: Receiver<VRAM>,
+    key_tx: Sender<u8>,
     window: Window,
     buffer: Vec<u32>,
 }
 
 impl Gpu {
-    pub fn new(rx: Receiver<VRAM>) -> Self {
+    pub fn new(rx: Receiver<VRAM>, key_tx: Sender<u8>) -> Self {
         let mut opts = WindowOptions::default();
 
         opts.scale = Scale::X16;
@@ -22,6 +24,7 @@ impl Gpu {
 
         Gpu {
             rx,
+            key_tx,
             window,
             buffer: vec![0u32; H * W],
         }
@@ -31,19 +34,32 @@ impl Gpu {
         self.window.set_background_color(0, 0, 0);
         self.window.set_target_fps(60);
 
+        // CHIP-8 key mapping
+        let key_map = [
+            Key::Key1, Key::Key2, Key::Key3, Key::Key4,
+            Key::Q, Key::W, Key::E, Key::R,
+            Key::A, Key::S, Key::D, Key::F,
+            Key::Z, Key::X, Key::C, Key::V,
+        ];
+
         while self.window.is_open() {
-            while self.window.is_open() {
-                match self.rx.recv_timeout(Duration::from_micros(1666)) {
-                    Ok(vram) => {
-                        self.draw(&vram);
-                    }
-                    Err(RecvTimeoutError::Timeout) => {
-                        self.window.update();
-                    }
-                    Err(RecvTimeoutError::Disconnected) => break,
+            // Check for key presses and send them
+            for (index, &key) in key_map.iter().enumerate() {
+                if self.window.is_key_pressed(key, minifb::KeyRepeat::No) {
+                    let _ = self.key_tx.send(index as u8);
                 }
-                sleep(Duration::from_millis(10));
             }
+
+            match self.rx.recv_timeout(Duration::from_micros(1666)) {
+                Ok(vram) => {
+                    self.draw(&vram);
+                }
+                Err(RecvTimeoutError::Timeout) => {
+                    self.window.update();
+                }
+                Err(RecvTimeoutError::Disconnected) => break,
+            }
+            sleep(Duration::from_millis(10));
         }
     }
 

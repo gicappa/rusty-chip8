@@ -7,55 +7,68 @@ mod cpu_op_03;
 mod cpu_op_04;
 #[allow(dead_code)]
 mod debug_cli;
+mod clock;
 
 use crate::config::VRAM;
 use crate::cpu::Cpu;
 use crate::gpu::Gpu;
 
-use std::sync::mpsc;
+use crate::clock::Clock;
+use std::sync::{mpsc, Arc, Mutex};
 use std::thread;
-use std::thread::sleep;
-use std::time::{Duration, Instant};
-// use crate::debug_cli::DebugCli;
+use crate::debug_cli::DebugCli;
 
 fn main() {
     let (tx, rx) = mpsc::channel::<VRAM>();
+    let (key_tx, key_rx) = mpsc::channel::<u8>();
 
-    let mut gpu = Gpu::new(rx);
+    let cpu = Arc::new(Mutex::new(Cpu::new()));
 
-    // let debug_cli = DebugCli::new(&cpu);
-    // debug_cli.start();
+    let mut gpu = Gpu::new(rx, key_tx);
 
+    // In a thread, f
     let handle = thread::spawn(move || {
-        let mut cpu = Cpu::new();
+        let cpu_arc_main = Arc::clone(&cpu);
+        let cpu_arc_debug_cli = Arc::clone(&cpu);
+        let cpu_debug_cli = cpu_arc_debug_cli.lock().unwrap();
+        let mut debug_cli = DebugCli::new(&cpu_debug_cli);
 
-        // let interval = Duration::from_micros(16_666);
-        let interval = Duration::from_secs(1);
-        let mut last_time = Instant::now();
+        let mut clock = Clock::new();
 
         loop {
-            cpu.clk();
 
-            if cpu.draw_flag() {
-                let frame = cpu.vram;
+            clock.start();
+
+            let mut cpu_guard = cpu_arc_main.lock().unwrap();
+
+            cpu_guard.clk();
+
+            if cpu_guard.draw_flag() {
+                let frame = cpu_guard.vram;
                 let _ = tx.send(frame);
             }
 
-            let now = Instant::now();
-            let elapsed = now - last_time;
-            if elapsed < interval {
-                sleep(interval - elapsed);
-                last_time += interval;
-            } else {
-                last_time = now;
+            // Check for key input
+            while let Ok(key) = key_rx.try_recv() {
+                // let mut cpu_guard = cpu_clone.lock().unwrap();
+                cpu_guard.set_key(key, true);
             }
+
+            clock.stop_and_wait();
+            debug_cli.tick().unwrap();
+            drop(cpu_guard);
         }
+
     });
+
+    {
+    }
 
     gpu.start();
 
+    let _ = handle.join().unwrap();
     // chip8
     //     .load_rom("rom.ch8")
     //     .expect("File not found or not readable");
-    let _ = handle.join().unwrap();
+
 }
