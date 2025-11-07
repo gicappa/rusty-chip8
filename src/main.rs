@@ -8,6 +8,7 @@ mod cpu_op_04;
 #[allow(dead_code)]
 mod debug_cli;
 mod clock;
+mod cpu_engine;
 
 use crate::config::VRAM;
 use crate::cpu::Cpu;
@@ -15,21 +16,24 @@ use crate::gpu::Gpu;
 
 use crate::clock::Clock;
 use std::sync::mpsc;
+use crate::cpu_engine::CpuEngine;
 
 fn main() {
     let (tx, rx) = mpsc::channel::<VRAM>();
 
     let mut cpu = Cpu::new();
+    let mut cpu_engine = CpuEngine::new(&mut cpu);
     let mut gpu = Gpu::new(rx);
     let mut clock = Clock::new();
 
     loop {
         clock.start();
-        cpu.clk();
 
-        if cpu.draw_flag() {
-            let frame = cpu.vram;
-            let _ = tx.send(frame);
+        cpu_engine.clk();
+
+        if cpu_engine.draw_flag() {
+            // let frame = cpu.vram;
+            // let _ = tx.send(frame);
         }
         clock.stop_and_wait();
 

@@ -1,8 +1,8 @@
 use crate::config::W;
-use crate::cpu::Cpu;
 use rand::random;
+use crate::cpu_engine::CpuEngine;
 
-impl Cpu {
+impl<'a> CpuEngine<'a> {
     // Operations //////////////////////////////////////////////////////////////
 
     /// Annn - LD I, addr
@@ -11,7 +11,7 @@ impl Cpu {
     pub(super) fn op_annn(&mut self, opcode: u16) {
         let nnn = opcode & 0x0fff;
 
-        self.i = nnn;
+        self.cpu.i = nnn;
     }
     /// Bnnn - JP V0, addr
     /// Jump to location nnn + V0.
@@ -19,7 +19,7 @@ impl Cpu {
     pub(super) fn op_bnnn(&mut self, opcode: u16) {
         let nnn = opcode & 0x0fff;
 
-        self.pc = (self.v[0] as u16) + nnn;
+        self.cpu.pc = (self.cpu.v[0] as u16) + nnn;
     }
     /// Cxkk - RND Vx, byte
     /// Set Vx = random byte AND kk.
@@ -31,7 +31,7 @@ impl Cpu {
         let kk = (opcode & 0x00ff) as u8;
         let rnd: u8 = random();
 
-        self.v[x] = rnd & kk;
+        self.cpu.v[x] = rnd & kk;
     }
     /// Dxyn - DRW Vx, Vy, nibble
     /// Display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision.
@@ -47,14 +47,14 @@ impl Cpu {
         let y = (opcode & 0x00F0 >> 4) as usize;
         let _n = (opcode & 0x000F) as usize;
 
-        let base_vram = self.v[x] as usize + (self.v[y] as usize * W);
-        let base_mem = self.i as usize;
+        let base_vram = self.cpu.v[x] as usize + (self.cpu.v[y] as usize * W);
+        let base_mem = self.cpu.i as usize;
 
 
-        let pixels = format!("{:b}", self.mem[base_mem]);
+        let pixels = format!("{:b}", self.cpu.mem[base_mem]);
 
         for x in pixels.chars() {
-            self.vram[base_vram] ^= x != '0'
+            self.cpu.vram[base_vram] ^= x != '0'
         }
 
         // for i in 0..n {
@@ -89,47 +89,52 @@ impl Cpu {
 
 #[cfg(test)]
 mod tests {
+    use crate::cpu::Cpu;
     use super::*;
 
     #[test]
     fn decode_op_test_annn() {
-        let mut chip = Cpu::new();
-        chip.i = 0x444;
+        let mut cpu = Cpu::new();
+        let mut cpu_engine = CpuEngine::new(&mut cpu);
+        cpu_engine.cpu.i = 0x444;
 
-        chip.decode_opcode(0xA555);
+        cpu_engine.decode_opcode(0xA555);
 
-        assert_eq!(chip.i, 0x555);
+        assert_eq!(cpu_engine.cpu.i, 0x555);
     }
     #[test]
     fn decode_op_test_bnnn() {
-        let mut chip = Cpu::new();
-        chip.pc = 0x400;
-        chip.v[0] = 0x10;
+        let mut cpu = Cpu::new();
+        let mut cpu_engine = CpuEngine::new(&mut cpu);
+        cpu_engine.cpu.pc = 0x400;
+        cpu_engine.cpu.v[0] = 0x10;
 
-        chip.decode_opcode(0xB500);
+        cpu_engine.decode_opcode(0xB500);
 
-        assert_eq!(chip.pc, 0x510);
+        assert_eq!(cpu_engine.cpu.pc, 0x510);
     }
     #[test]
     fn decode_op_test_cxkk_and_0() {
-        let mut chip = Cpu::new();
-        chip.v[5] = 0x77;
+        let mut cpu = Cpu::new();
+        let mut cpu_engine = CpuEngine::new(&mut cpu);
+        cpu_engine.cpu.v[5] = 0x77;
 
         for _ in 0..5 {
-            chip.decode_opcode(0xC500);
-            assert_eq!(chip.v[5], 0x00);
+            cpu_engine.decode_opcode(0xC500);
+            assert_eq!(cpu_engine.cpu.v[5], 0x00);
         }
     }
     #[test]
     fn decode_op_test_cxkk_rnd() {
-        let mut chip = Cpu::new();
-        chip.v[5] = 0x77;
+        let mut cpu = Cpu::new();
+        let mut cpu_engine = CpuEngine::new(&mut cpu);
+        cpu_engine.cpu.v[5] = 0x77;
 
         let mut res: Vec<u8> = Vec::new();
 
         for _ in 0..9 {
-            chip.decode_opcode(0xC5FF);
-            res.push(chip.v[5]);
+            cpu_engine.decode_opcode(0xC5FF);
+            res.push(cpu_engine.cpu.v[5]);
         }
 
         assert!(!res.iter().all(|x| *x == res[0]));
