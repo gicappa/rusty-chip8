@@ -15,8 +15,8 @@ use crate::cpu::Cpu;
 use crate::gpu::Gpu;
 
 use crate::clock::Clock;
-use std::sync::mpsc;
 use crate::cpu_engine::CpuEngine;
+use std::sync::mpsc;
 
 fn main() {
     let (tx, rx) = mpsc::channel::<VRAM>();
@@ -28,15 +28,13 @@ fn main() {
 
     loop {
         clock.start();
-
         cpu_engine.clk();
 
         if cpu_engine.draw_flag() {
-            // let frame = cpu.vram;
-            // let _ = tx.send(frame);
+            let _ = tx.send(cpu_engine.cpu.vram);
         }
-        clock.stop_and_wait();
 
+        clock.stop_and_wait();
         gpu.clk();
     }
 

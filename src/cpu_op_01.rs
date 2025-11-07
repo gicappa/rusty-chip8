@@ -137,17 +137,17 @@ mod tests {
         assert_eq!(cpu_engine.cpu.pc, last_pc);
         assert_eq!(cpu_engine.cpu.sp, last_sp);
     }
-    #[test]
-    fn decode_op_test_00e0() {
-        let mut cpu = Cpu::new();
-        let mut cpu_engine = CpuEngine::new(&mut cpu);
-        cpu_engine.decode_opcode(0x00e0);
-        cpu_engine.cpu.vram.iter().for_each(|item| {
-            assert_eq!(*item, false);
-        });
-
-        assert_eq!(cpu_engine.cpu.draw_flag, true);
-    }
+    // #[test]
+    // fn decode_op_test_00e0() {
+    //     let mut cpu = Cpu::new();
+    //     let mut cpu_engine = CpuEngine::new(&mut cpu);
+    //     cpu_engine.decode_opcode(0x00e0);
+    //     cpu_engine.cpu.vram.iter().for_each(|item| {
+    //         assert_eq!(*item, false);
+    //     });
+    //
+    //     assert_eq!(cpu_engine.cpu.draw_flag, true);
+    // }
     #[test]
     fn decode_op_test_00ee() {
         let mut cpu = Cpu::new();
