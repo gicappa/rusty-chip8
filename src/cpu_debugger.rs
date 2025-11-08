@@ -1,14 +1,16 @@
 use crate::cpu::Cpu;
 use anyhow::Result;
+use crossterm::cursor::Show;
 use crossterm::event::{Event, KeyCode};
+use crossterm::terminal::{Clear, ClearType};
 use crossterm::{event, event::{DisableMouseCapture, EnableMouseCapture}, execute, terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen}};
 use ratatui::{
     prelude::*,
     widgets::{Block, Borders, Cell, Paragraph, Row, Table},
 };
-use std::io::Stdout;
+use std::io::{stdout, Stdout};
 use std::time::Duration;
-use std::{collections::VecDeque, io, time::Instant};
+use std::{collections::VecDeque, time::Instant};
 
 pub struct CpuDebugger {
     logs: Vec<String>,
@@ -22,7 +24,7 @@ impl CpuDebugger {
 
         // setup terminal
         enable_raw_mode().unwrap();
-        let mut stdout = io::stdout();
+        let mut stdout = stdout();
         execute!(stdout, EnterAlternateScreen, EnableMouseCapture).unwrap();
         let backend = CrosstermBackend::new(stdout);
         let terminal = Terminal::new(backend).unwrap();
@@ -43,26 +45,30 @@ impl CpuDebugger {
         }
     }
 
-    pub fn tick(&mut self, cpu: &Cpu) -> Result<()> {
+    pub fn tick(&mut self, cpu: &mut Cpu) -> Result<()> {
         // draw
         self.terminal.draw(|f| {
-            let size = f.area();
-
-            // horizontal layout: 50% log | 30% register | 20% fps
-            let chunks = Layout::default()
-                .direction(Direction::Horizontal)
-                .constraints([
-                    Constraint::Percentage(50),
-                    Constraint::Percentage(30),
+            let outer_layout = Layout::default()
+                .direction(Direction::Vertical)
+                .constraints(vec![
                     Constraint::Percentage(20),
+                    Constraint::Percentage(80),
                 ])
-                .split(size);
+                .split(f.area());
+
+            let inner_layout = Layout::default()
+                .direction(Direction::Horizontal)
+                .constraints(vec![
+                    Constraint::Percentage(70),
+                    Constraint::Percentage(30),
+                ])
+                .split(outer_layout[0]);
 
             // Logs
             let log_text = self.logs.iter().rev().take(200).cloned().collect::<Vec<_>>().join("\n");
             let logs = Paragraph::new(log_text)
                 .block(Block::default().borders(Borders::ALL).title(" Logs "));
-            f.render_widget(logs, chunks[0]);
+            f.render_widget(logs, outer_layout[1]);
 
             // Registers
             let mut rows: Vec<Row> = Vec::new();
@@ -89,23 +95,30 @@ impl CpuDebugger {
             ])
                 .block(Block::default().borders(Borders::ALL).title(" CPU "));
 
-            f.render_widget(regs, chunks[1]);
+            f.render_widget(regs, inner_layout[0]);
 
             // FPS
-            // let avg = self.avg_fps(); error!!!
+            let mut avg = 0.0;
+
+            if !self.fps_history.is_empty() {
+                avg = self.fps_history.iter().copied().sum::<f32>() / (self.fps_history.len() as f32);
+            }
+
             let fps_text = format!(
                 "FPS avg: {:>5.1}\nLast {} frame:\n{}",
-                10,
+                avg,
                 self.fps_history.len(),
                 ascii_sparkline(&self.fps_history, 10.0, 120.0)
             );
             let fps = Paragraph::new(fps_text)
                 .block(Block::default().borders(Borders::ALL).title(" Performance "));
-            f.render_widget(fps, chunks[2]);
+            f.render_widget(fps, inner_layout[1]);
         })?;
+
         while event::poll(Duration::from_millis(0))? {
             if let Event::Key(k) = event::read()? {
                 if k.code == KeyCode::Char('q') || k.code == KeyCode::Esc {
+                    cpu.running = false;
                     break;
                 }
             }
@@ -119,18 +132,14 @@ impl CpuDebugger {
         self.fps_history.iter().copied().sum::<f32>() / (self.fps_history.len() as f32)
     }
 
-    fn quit(&mut self) -> Result<()> {
-        // let res = run_app(&mut terminal, rx);
+    pub fn quit(&mut self) -> Result<()> {
         disable_raw_mode()?;
-        execute!(self.terminal.backend_mut(), LeaveAlternateScreen, DisableMouseCapture)?;
-        self.terminal.show_cursor()?;
-
-        // res
+        execute!(stdout(), LeaveAlternateScreen, Show, DisableMouseCapture, Clear(ClearType::All))?;
         Ok(())
     }
 }
 
-// Sparklines ASCII super semplici; min/max clampati
+
 fn ascii_sparkline(hist: &VecDeque<f32>, min: f32, max: f32) -> String {
     const BARS: &[char] = &['▁', '▂', '▃', '▄', '▅', '▆', '▇', '█'];
     let mut s = String::new();

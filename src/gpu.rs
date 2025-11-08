@@ -1,7 +1,6 @@
 use crate::config::{H, VRAM, W};
-use minifb::{Scale, Window, WindowOptions};
-use std::process;
 use crate::cpu::Cpu;
+use minifb::{Scale, Window, WindowOptions};
 
 pub struct Gpu {
     window: Window,
@@ -9,13 +8,12 @@ pub struct Gpu {
 }
 
 impl Gpu {
-    pub fn new() -> Self {
+    pub fn new(title: &str) -> Self {
         let mut opts = WindowOptions::default();
 
         opts.scale = Scale::X16;
 
-        let mut window = Window::new(
-            "Rusty Chip-8 Emulator", W, H, opts)
+        let mut window = Window::new(title, W, H, opts)
             .unwrap_or_else(|e| { panic!("{}", e); });
         window.set_background_color(0, 0, 0);
         window.set_target_fps(60);
@@ -28,7 +26,7 @@ impl Gpu {
 
     pub fn tick(&mut self, cpu: &mut Cpu) {
         if !self.window.is_open() {
-            process::exit(0);
+            cpu.running = false;
         }
 
         if cpu.draw_flag {

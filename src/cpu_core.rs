@@ -112,7 +112,7 @@ impl CpuCore {
             },
         }
     }
-    
+
     #[allow(dead_code)]
     pub fn load_rom(&mut self, cpu: &mut Cpu, filename: &str) -> Result<(), io::Error> {
         let rom_data = fs::read(filename)?;
