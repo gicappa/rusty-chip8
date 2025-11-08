@@ -5,12 +5,12 @@ use std::{fs, io};
 pub(crate) const MEMORY_SIZE: usize = 4096;
 pub(crate) const START_ADDRESS: usize = 0x200;
 
-pub struct CpuEngine<'a> {
+pub struct CpuCore<'a> {
     pub(crate) cpu: &'a mut Cpu,
     pub(crate) draw_flag: bool,
 }
 
-impl<'a> CpuEngine<'a> {
+impl<'a> CpuCore<'a> {
     pub(crate) fn new(cpu: &'a mut Cpu) -> Self {
         Self {
             cpu,
@@ -150,7 +150,7 @@ mod tests {
     #[test]
     fn load_rom_test() {
         let mut cpu = Cpu::new();
-        let mut cpu_engine = CpuEngine::new(&mut cpu);
+        let mut cpu_engine = CpuCore::new(&mut cpu);
 
         cpu_engine.load_rom("tests/fixtures/test_opcode.ch8")
             .expect("Error loading fixture files");
@@ -164,7 +164,7 @@ mod tests {
     #[test]
     fn new_initializes_state() {
         let mut cpu = Cpu::new();
-        let cpu_engine = CpuEngine::new(&mut cpu);
+        let cpu_engine = CpuCore::new(&mut cpu);
 
         assert_eq!(cpu_engine.cpu.pc, START_ADDRESS as u16);
         assert!(cpu_engine.cpu.mem.iter().all(|&b| b == 0));

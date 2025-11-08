@@ -1,8 +1,8 @@
 use crate::config::W;
 use rand::random;
-use crate::cpu_engine::CpuEngine;
+use crate::cpu_core::CpuCore;
 
-impl<'a> CpuEngine<'a> {
+impl<'a> CpuCore<'a> {
     // Operations //////////////////////////////////////////////////////////////
 
     /// Annn - LD I, addr
@@ -95,46 +95,46 @@ mod tests {
     #[test]
     fn decode_op_test_annn() {
         let mut cpu = Cpu::new();
-        let mut cpu_engine = CpuEngine::new(&mut cpu);
-        cpu_engine.cpu.i = 0x444;
+        let mut cpu_core = CpuCore::new(&mut cpu);
+        cpu_core.cpu.i = 0x444;
 
-        cpu_engine.decode_opcode(0xA555);
+        cpu_core.decode_opcode(0xA555);
 
-        assert_eq!(cpu_engine.cpu.i, 0x555);
+        assert_eq!(cpu_core.cpu.i, 0x555);
     }
     #[test]
     fn decode_op_test_bnnn() {
         let mut cpu = Cpu::new();
-        let mut cpu_engine = CpuEngine::new(&mut cpu);
-        cpu_engine.cpu.pc = 0x400;
-        cpu_engine.cpu.v[0] = 0x10;
+        let mut cpu_core = CpuCore::new(&mut cpu);
+        cpu_core.cpu.pc = 0x400;
+        cpu_core.cpu.v[0] = 0x10;
 
-        cpu_engine.decode_opcode(0xB500);
+        cpu_core.decode_opcode(0xB500);
 
-        assert_eq!(cpu_engine.cpu.pc, 0x510);
+        assert_eq!(cpu_core.cpu.pc, 0x510);
     }
     #[test]
     fn decode_op_test_cxkk_and_0() {
         let mut cpu = Cpu::new();
-        let mut cpu_engine = CpuEngine::new(&mut cpu);
-        cpu_engine.cpu.v[5] = 0x77;
+        let mut cpu_core = CpuCore::new(&mut cpu);
+        cpu_core.cpu.v[5] = 0x77;
 
         for _ in 0..5 {
-            cpu_engine.decode_opcode(0xC500);
-            assert_eq!(cpu_engine.cpu.v[5], 0x00);
+            cpu_core.decode_opcode(0xC500);
+            assert_eq!(cpu_core.cpu.v[5], 0x00);
         }
     }
     #[test]
     fn decode_op_test_cxkk_rnd() {
         let mut cpu = Cpu::new();
-        let mut cpu_engine = CpuEngine::new(&mut cpu);
-        cpu_engine.cpu.v[5] = 0x77;
+        let mut cpu_core = CpuCore::new(&mut cpu);
+        cpu_core.cpu.v[5] = 0x77;
 
         let mut res: Vec<u8> = Vec::new();
 
         for _ in 0..9 {
-            cpu_engine.decode_opcode(0xC5FF);
-            res.push(cpu_engine.cpu.v[5]);
+            cpu_core.decode_opcode(0xC5FF);
+            res.push(cpu_core.cpu.v[5]);
         }
 
         assert!(!res.iter().all(|x| *x == res[0]));

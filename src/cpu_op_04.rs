@@ -1,6 +1,6 @@
-use crate::cpu_engine::CpuEngine;
+use crate::cpu_core::CpuCore;
 
-impl<'a> CpuEngine<'a> {
+impl<'a> CpuCore<'a> {
     // Operations //////////////////////////////////////////////////////////////
 
     /// Fx07 - LD Vx, DT
