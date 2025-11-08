@@ -1,4 +1,4 @@
-# Rusty CHIP-8
+# 0xID8
 
 A CHIP-8 emulator written in Rust.
 
