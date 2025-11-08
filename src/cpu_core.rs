@@ -5,19 +5,15 @@ use std::{fs, io};
 pub(crate) const MEMORY_SIZE: usize = 4096;
 pub(crate) const START_ADDRESS: usize = 0x200;
 
-pub struct CpuCore {
-    pub(crate) draw_flag: bool,
-}
+pub struct CpuCore {}
 
 impl CpuCore {
     pub(crate) fn new() -> Self {
-        Self {
-            draw_flag: false,
-        }
+        Self {}
     }
 
-    pub fn clk(&mut self, cpu: &mut Cpu) {
-        self.draw_flag = false;
+    pub fn tick(&mut self, cpu: &mut Cpu) {
+        cpu.draw_flag = false;
 
         let opcode = self.fetch_opcode(cpu);
 
@@ -116,11 +112,7 @@ impl CpuCore {
             },
         }
     }
-
-    pub fn draw_flag(&self) -> bool {
-        self.draw_flag
-    }
-
+    
     #[allow(dead_code)]
     pub fn load_rom(&mut self, cpu: &mut Cpu, filename: &str) -> Result<(), io::Error> {
         let rom_data = fs::read(filename)?;

@@ -10,16 +10,15 @@ use std::io::Stdout;
 use std::time::Duration;
 use std::{collections::VecDeque, io, time::Instant};
 
-pub struct CpuDebugger<'a> {
-    cpu: &'a Cpu,
+pub struct CpuDebugger {
     logs: Vec<String>,
     fps_history: VecDeque<f32>,
     last_frame: Instant,
     terminal: Terminal<CrosstermBackend<Stdout>>,
 }
 
-impl<'a> CpuDebugger<'a> {
-    pub fn new(cpu: &'a Cpu) -> Self {
+impl CpuDebugger {
+    pub fn new() -> Self {
 
         // setup terminal
         enable_raw_mode().unwrap();
@@ -29,7 +28,6 @@ impl<'a> CpuDebugger<'a> {
         let terminal = Terminal::new(backend).unwrap();
 
         Self {
-            cpu,
             logs: Vec::with_capacity(2000),
             fps_history: VecDeque::with_capacity(120),
             last_frame: Instant::now(),
@@ -45,7 +43,7 @@ impl<'a> CpuDebugger<'a> {
         }
     }
 
-    pub fn tick(&mut self) -> Result<()> {
+    pub fn tick(&mut self, cpu: &Cpu) -> Result<()> {
         // draw
         self.terminal.draw(|f| {
             let size = f.area();
@@ -69,9 +67,9 @@ impl<'a> CpuDebugger<'a> {
             // Registers
             let mut rows: Vec<Row> = Vec::new();
             rows.push(Row::new(vec![
-                Cell::from("PC"), Cell::from(format!("{:#06X}", self.cpu.pc)),
-                Cell::from("SP"), Cell::from(format!("{}", self.cpu.sp)),
-                Cell::from(" I"), Cell::from(format!("{:#06X}", self.cpu.i)),
+                Cell::from("PC"), Cell::from(format!("{:#06X}", cpu.pc)),
+                Cell::from("SP"), Cell::from(format!("{}", cpu.sp)),
+                Cell::from(" I"), Cell::from(format!("{:#06X}", cpu.i)),
             ]));
 
             for r in 0..2 {
@@ -79,7 +77,7 @@ impl<'a> CpuDebugger<'a> {
                 for c in 0..8 {
                     let idx = r * 8 + c;
                     cells.push(Cell::from(format!("V{:X}", idx)));
-                    cells.push(Cell::from(format!("{:#04X}", self.cpu.v[idx])));
+                    cells.push(Cell::from(format!("{:#04X}", cpu.v[idx])));
                 }
                 rows.push(Row::new(cells));
             }

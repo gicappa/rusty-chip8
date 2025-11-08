@@ -18,7 +18,7 @@ impl CpuCore {
     /// Clear the display.
     pub(super) fn op_00e0(&mut self, cpu: &mut Cpu, _opcode: u16) {
         cpu.vram = [false; H * W];
-        self.draw_flag = true;
+        cpu.draw_flag = true;
     }
 
     /// 00EE - RET
@@ -123,8 +123,8 @@ impl CpuCore {
 
 #[cfg(test)]
 mod tests {
-    use crate::cpu::Cpu;
-    use super::*;
+    // use crate::cpu::Cpu;
+    // use super::*;
     //
     // #[test]
     // fn decode_op_test_0nnn() {

@@ -14,6 +14,7 @@ pub struct Cpu {
     pub sound_timer: u8,
     pub _keypad: [u8; 16],
     pub vram: VRAM,
+    pub draw_flag: bool
 }
 
 impl Cpu {
@@ -29,6 +30,7 @@ impl Cpu {
             sound_timer: 0,
             _keypad: [0; 16],
             vram: [false; W * H],
+            draw_flag: false
         };
 
         s.reset_memory();

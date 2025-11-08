@@ -1,6 +1,7 @@
 use crate::config::{H, VRAM, W};
 use minifb::{Scale, Window, WindowOptions};
 use std::process;
+use crate::cpu::Cpu;
 
 pub struct Gpu {
     window: Window,
@@ -25,19 +26,19 @@ impl Gpu {
         }
     }
 
-    pub fn clk(&mut self, vram: VRAM, draw_flag: bool) {
+    pub fn tick(&mut self, cpu: &mut Cpu) {
         if !self.window.is_open() {
             process::exit(0);
         }
 
-        if draw_flag {
-            self.draw(&vram);
+        if cpu.draw_flag {
+            self.draw(cpu.vram);
         } else {
             self.window.update();
         }
     }
 
-    pub fn draw(&mut self, vram: &VRAM) {
+    pub fn draw(&mut self, vram: VRAM) {
         for x in 0..2048 {
             self.buffer[x] = if vram[x] { 0x00FF_FFFF } else { 0x0000_0000 };
         }
