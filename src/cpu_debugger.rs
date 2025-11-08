@@ -10,7 +10,7 @@ use std::io::Stdout;
 use std::time::Duration;
 use std::{collections::VecDeque, io, time::Instant};
 
-pub struct DebugCli<'a> {
+pub struct CpuDebugger<'a> {
     cpu: &'a Cpu,
     logs: Vec<String>,
     fps_history: VecDeque<f32>,
@@ -18,7 +18,7 @@ pub struct DebugCli<'a> {
     terminal: Terminal<CrosstermBackend<Stdout>>,
 }
 
-impl<'a> DebugCli<'a> {
+impl<'a> CpuDebugger<'a> {
     pub fn new(cpu: &'a Cpu) -> Self {
 
         // setup terminal

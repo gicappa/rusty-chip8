@@ -6,7 +6,7 @@ mod cpu_op_02;
 mod cpu_op_03;
 mod cpu_op_04;
 #[allow(dead_code)]
-mod debug_cli;
+mod cpu_debugger;
 mod clock;
 mod cpu_core;
 
