@@ -1,17 +1,14 @@
 use crate::config::{H, VRAM, W};
 use minifb::{Scale, Window, WindowOptions};
 use std::process;
-use std::sync::mpsc::{Receiver, RecvTimeoutError};
-use std::time::Duration;
 
 pub struct Gpu {
-    rx: Receiver<VRAM>,
     window: Window,
     buffer: Vec<u32>,
 }
 
 impl Gpu {
-    pub fn new(rx: Receiver<VRAM>) -> Self {
+    pub fn new() -> Self {
         let mut opts = WindowOptions::default();
 
         opts.scale = Scale::X16;
@@ -23,26 +20,20 @@ impl Gpu {
         window.set_target_fps(60);
 
         Gpu {
-            rx,
             window,
             buffer: vec![0u32; H * W],
         }
     }
 
-    pub fn clk(&mut self) {
+    pub fn clk(&mut self, vram: VRAM, draw_flag: bool) {
         if !self.window.is_open() {
             process::exit(0);
         }
-        
-        match self.rx.recv_timeout(Duration::from_micros(1666)) {
-            Ok(vram) => {
-                self.draw(&vram);
-            }
-            Err(RecvTimeoutError::Timeout) => {
-                self.window.update();
-            }
-            Err(RecvTimeoutError::Disconnected) =>
-                println!("Disconnected")
+
+        if draw_flag {
+            self.draw(&vram);
+        } else {
+            self.window.update();
         }
     }
 
