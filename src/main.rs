@@ -10,32 +10,23 @@ mod debug_cli;
 mod clock;
 mod cpu_engine;
 
-use crate::config::VRAM;
 use crate::cpu::Cpu;
 use crate::gpu::Gpu;
 
 use crate::clock::Clock;
 use crate::cpu_engine::CpuEngine;
-use std::sync::mpsc;
 
 fn main() {
-    let (tx, rx) = mpsc::channel::<VRAM>();
-
     let mut cpu = Cpu::new();
     let mut cpu_engine = CpuEngine::new(&mut cpu);
-    let mut gpu = Gpu::new(rx);
+    let mut gpu = Gpu::new();
     let mut clock = Clock::new();
 
     loop {
         clock.start();
         cpu_engine.clk();
-
-        if cpu_engine.draw_flag() {
-            let _ = tx.send(cpu_engine.cpu.vram);
-        }
-
+        gpu.clk(cpu_engine.cpu.vram, cpu_engine.draw_flag());
         clock.stop_and_wait();
-        gpu.clk();
     }
 
     // chip8
