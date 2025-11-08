@@ -18,15 +18,15 @@ use crate::cpu_core::CpuCore;
 
 fn main() {
     let mut cpu = Cpu::new();
-    let mut core = CpuCore::new(&mut cpu);
+    let mut core = CpuCore::new();
     let mut gpu = Gpu::new();
     let mut clock = Clock::new();
 
     loop {
         clock.start();
-        core.clk();
+        core.clk(&mut cpu);
         gpu.clk(
-            core.cpu.vram,
+            cpu.vram,
             core.draw_flag());
         clock.stop_and_wait();
     }
