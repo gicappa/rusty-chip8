@@ -11,6 +11,7 @@ use ratatui::{
 use std::io::{stdout, Stdout};
 use std::time::Duration;
 use std::{collections::VecDeque, time::Instant};
+use minifb::Key::K;
 
 pub struct CpuDebugger {
     logs: Vec<String>,
@@ -54,7 +55,7 @@ impl CpuDebugger {
             let outer_layout = Layout::default()
                 .direction(Direction::Vertical)
                 .constraints(vec![
-                    Constraint::Length(3),
+                    Constraint::Length(6),
                     Constraint::Length(4),
                     Constraint::Fill(1),
                 ])
@@ -63,8 +64,8 @@ impl CpuDebugger {
             let inner_layout = Layout::default()
                 .direction(Direction::Horizontal)
                 .constraints(vec![
-                    Constraint::Percentage(70),
-                    Constraint::Percentage(30),
+                    Constraint::Min(20),
+                    Constraint::Min(44),
                 ])
                 .split(outer_layout[0]);
 
@@ -79,46 +80,44 @@ impl CpuDebugger {
 
             let mut cpu_values: Vec<Row> = Vec::new();
             cpu_values.push(Row::new(vec![
-                Cell::from("PC"), Cell::from(format!("{:#06X}", cpu.pc)),
-                Cell::from("SP"), Cell::from(format!("{}", cpu.sp)),
-                Cell::from(" I"), Cell::from(format!("{:#06X}", cpu.i)),
-                Cell::from("Draw"), Cell::from(format!("[{0}]", if cpu.draw_flag { "0" } else { "1" })),
-                Cell::from("ROM "), Cell::from(format!("[{:}]", if cpu.panic { "0" } else { "1" })),
+                Cell::from(" PC"), Cell::from(format!("{:#05X}", cpu.pc)),
+                Cell::from("OPCODE"), Cell::from(format!("{:#05X}", 0x289)),
+            ]));
+            cpu_values.push(Row::new(vec![
+                Cell::from(" SP"), Cell::from(format!("{}", cpu.sp)),
+                Cell::from("DRAW"), Cell::from(format!("{}", if cpu.draw_flag { "□" } else { "■" })),
+            ]));
+            cpu_values.push(Row::new(vec![
+                Cell::from(" I"), Cell::from(format!("{:#05X}", cpu.i)),
+                Cell::from("PANIC!"), Cell::from(format!("{}", if cpu.panic { "□" } else { "■" })),
             ]));
 
             let cpu_var = Table::new(cpu_values, [
-                Constraint::Length(2), Constraint::Length(8),
-                Constraint::Length(2), Constraint::Length(3),
-                Constraint::Length(2), Constraint::Length(8),
-                Constraint::Length(4), Constraint::Length(6),
-                Constraint::Length(4), Constraint::Length(7),
+                Constraint::Length(3), Constraint::Length(6),
+                Constraint::Length(6), Constraint::Length(6),
             ]).block(Block::default().borders(Borders::ALL).title(" CPU "));
 
             f.render_widget(cpu_var, inner_layout[0]);
 
             let mut regs_values: Vec<Row> = Vec::new();
-            for r in 0..2 {
+            for r in 0..4 {
                 let mut cells = Vec::new();
-                for c in 0..8 {
-                    let idx = r * 8 + c;
-                    cells.push(Cell::from(format!("V{}", idx)));
-                    cells.push(Cell::from(format!("{:#02X}", cpu.v[idx])));
+                for c in 0..4 {
+                    let idx = r + c * 4;
+                    cells.push(Cell::from(format!(" V{:#02}:", idx)));
+                    cells.push(Cell::from(format!("{:#02}", cpu.v[idx])));
                 }
                 regs_values.push(Row::new(cells));
             }
 
             let regs = Table::new(regs_values, [
-                Constraint::Length(3), Constraint::Length(8),
-                Constraint::Length(3), Constraint::Length(8),
-                Constraint::Length(3), Constraint::Length(8),
-                Constraint::Length(3), Constraint::Length(8),
-                Constraint::Length(3), Constraint::Length(8),
-                Constraint::Length(3), Constraint::Length(8),
-                Constraint::Length(3), Constraint::Length(8),
-                Constraint::Length(3), Constraint::Length(8),
+                Constraint::Length(4), Constraint::Length(2),
+                Constraint::Length(4), Constraint::Length(2),
+                Constraint::Length(4), Constraint::Length(2),
+                Constraint::Length(4), Constraint::Length(2),
             ]).block(Block::default().borders(Borders::ALL).title(" Regs "));
 
-            f.render_widget(regs, outer_layout[1]);
+            f.render_widget(regs, inner_layout[1]);
 
             // FPS
             let mut avg = 0.0;
@@ -137,7 +136,7 @@ impl CpuDebugger {
             );
             let fps = Paragraph::new(fps_text)
                 .block(Block::default().borders(Borders::ALL).title(" Performance "));
-            f.render_widget(fps, inner_layout[1]);
+            f.render_widget(fps, outer_layout[1]);
         })?;
 
         while event::poll(Duration::from_millis(0))? {
