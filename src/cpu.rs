@@ -16,7 +16,7 @@ pub struct Cpu {
     pub vram: VRAM,
     pub draw_flag: bool,
     pub running: bool,
-    pub rom_loaded: bool,
+    pub panic: bool,
 }
 
 const FONT: [u8; 80] = [
@@ -53,7 +53,7 @@ impl Cpu {
             vram: [false; WXH],
             draw_flag: true,
             running: true,
-            rom_loaded: false,
+            panic: false,
         };
 
         s.reset_memory();

@@ -27,7 +27,7 @@ fn main() {
     //     .load_rom("rom.ch8")
     //     .expect("File not found or not readable");
 
-    if !cpu.rom_loaded {
+    if !cpu.panic {
         gpu.splash(&mut cpu);
     }
 

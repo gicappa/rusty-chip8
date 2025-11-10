@@ -13,7 +13,7 @@ impl CpuCore {
     }
 
     pub fn tick(&mut self, cpu: &mut Cpu) {
-        if !cpu.rom_loaded {
+        if !cpu.panic {
             return;
         }
 
@@ -33,7 +33,7 @@ impl CpuCore {
                 println!("beep!");
             }
         }
-        cpu.pc += 2;
+        cpu.pc = (cpu.pc + 2) % MEMORY_SIZE as u16;
     }
 
     fn fetch_opcode(&mut self, cpu: &mut Cpu) -> u16 {
@@ -130,7 +130,7 @@ impl CpuCore {
             cpu.mem[START_ADDRESS + i] = byte;
         }
 
-        cpu.rom_loaded = true;
+        cpu.panic = true;
 
         Ok(())
     }

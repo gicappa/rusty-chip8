@@ -83,7 +83,7 @@ impl CpuDebugger {
                 Cell::from("SP"), Cell::from(format!("{}", cpu.sp)),
                 Cell::from(" I"), Cell::from(format!("{:#06X}", cpu.i)),
                 Cell::from("Draw"), Cell::from(format!("[{0}]", if cpu.draw_flag { "0" } else { "1" })),
-                Cell::from("ROM "), Cell::from(format!("[{:}]", if cpu.rom_loaded { "0" } else { "1" })),
+                Cell::from("ROM "), Cell::from(format!("[{:}]", if cpu.panic { "0" } else { "1" })),
             ]));
 
             let cpu_var = Table::new(cpu_values, [
