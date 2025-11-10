@@ -49,7 +49,9 @@ impl CpuCore {
     /// Set I = location of sprite for digit Vx.
     /// The value of I is set to the location for the hexadecimal sprite corresponding to the value
     /// of Vx. See section 2.4, Display, for more information on the Chip-8 hexadecimal font.
-    pub(super) fn op_fx29(&mut self, _cpu: &mut Cpu, _opcode: u16) {}
+    pub(super) fn op_fx29(&mut self, _cpu: &mut Cpu, _opcode: u16) {
+        
+    }
 
     /// Fx33 - LD B, Vx
     /// Store BCD representation of Vx in memory locations I, I+1, and I+2.

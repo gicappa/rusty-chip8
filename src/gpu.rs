@@ -1,6 +1,7 @@
+use std::ptr::addr_of_mut;
 use crate::config::{H, VRAM, W, WXH};
 use crate::cpu::Cpu;
-use minifb::{Scale, Window, WindowOptions};
+use minifb::{Key, Scale, Window, WindowOptions};
 
 pub struct Gpu {
     window: Window,
@@ -31,10 +32,31 @@ impl Gpu {
             cpu.running = false;
         }
 
+        self.check_input(cpu);
+
         if cpu.draw_flag {
             self.draw(cpu.vram);
         } else {
             self.window.update();
+        }
+    }
+
+    pub fn check_input(&self, cpu: &mut Cpu) {
+        let keypad = [
+            Key::Key1, Key::Key2, Key::Key3, Key::Key4,
+            Key::Q, Key::W, Key::E, Key::R,
+            Key::A, Key::S, Key::D, Key::F,
+            Key::Z, Key::X, Key::C, Key::V,
+        ];
+
+        for (i, key) in keypad.iter().enumerate() {
+            if self.window.is_key_down(*key) {
+                cpu.keypad[i]=true;
+            }
+
+            if self.window.is_key_released(*key) {
+                cpu.keypad[i]=false;
+            }
         }
     }
 
