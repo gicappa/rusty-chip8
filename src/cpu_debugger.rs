@@ -127,6 +127,8 @@ impl CpuDebugger {
                 avg = self.fps_history.iter().copied().sum::<f32>() / (self.fps_history.len() as f32);
             }
 
+            self.fps_history.push_front((1_000_000 / self.last_frame.elapsed().as_micros()) as f32);
+            self.last_frame = Instant::now();
             let fps_text = format!(
                 "FPS avg: {:>5.1}\nLast {} frame:\n{}",
                 avg,
