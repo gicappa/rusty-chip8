@@ -34,13 +34,16 @@ impl CpuCore {
         let x = ((opcode & 0x0F00) >> 8) as usize;
 
         cpu.v[x] = cpu.sound_timer;
-
     }
 
     /// Fx1E - ADD I, Vx
     /// Set I = I + Vx.
-    /// The values of I and Vx are added, and the results are stored in I.
-    pub(super) fn op_fx1e(&mut self, _cpu: &mut Cpu, _opcode: u16) {}
+    /// The values of I and Vx are added, and the results are stored in 'I'.
+    pub(super) fn op_fx1e(&mut self, cpu: &mut Cpu, opcode: u16) {
+        let x = ((opcode & 0x0F00) >> 8) as usize;
+
+        cpu.i += cpu.v[x] as u16;
+    }
 
     /// Fx29 - LD F, Vx
     /// Set I = location of sprite for digit Vx.
@@ -110,10 +113,18 @@ mod tests {
     }
     /// Fx1E - ADD I, Vx
     /// Set I = I + Vx.
-    /// The values of I and Vx are added, and the results are stored in I.
+    /// The values of I and Vx are added, and the results are stored in 'I'.
     #[test]
     fn decode_op_test_fx1e() {
-        assert!(false);
+        let mut cpu = Cpu::new();
+        let mut core = CpuCore::new();
+
+        cpu.i = 0x402;
+        cpu.v[0x3] = 0x2A;
+
+        core.decode_opcode(&mut cpu, 0xF31E);
+
+        assert_eq!(cpu.i, 0x42C);
     }
     /// Fx29 - LD F, Vx
     /// Set I = location of sprite for digit Vx.
