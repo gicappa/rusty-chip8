@@ -13,7 +13,7 @@ mod cpu_core;
 use crate::clock::Clock;
 use crate::cpu::Cpu;
 use crate::cpu_core::CpuCore;
-// use crate::cpu_debugger::CpuDebugger;
+use crate::cpu_debugger::CpuDebugger;
 use crate::gpu::Gpu;
 
 fn main() {
@@ -21,7 +21,7 @@ fn main() {
     let mut core = CpuCore::new();
     let mut gpu = Gpu::new("Rusty Chip-8 Emulator");
     let mut clock = Clock::new();
-    // let mut cpu_debugger = CpuDebugger::new();
+    let mut cpu_debugger = CpuDebugger::new();
 
     // chip8
     //     .load_rom("rom.ch8")
@@ -35,11 +35,10 @@ fn main() {
         clock.start();
         core.tick(&mut cpu);
         gpu.tick(&mut cpu);
-
         // could be used in a thread to avoid using CPU time to draw cpu status
-        // cpu_debugger.tick(&mut cpu).unwrap();
-
+        cpu_debugger.tick(&mut cpu).unwrap();
         clock.stop_and_wait();
     }
-    // cpu_debugger.quit().unwrap();
+
+    cpu_debugger.quit().unwrap();
 }

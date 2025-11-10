@@ -90,9 +90,8 @@ impl CpuCore {
 
 #[cfg(test)]
 mod tests {
-    use crate::cpu::Cpu;
-    use super::*;
-
+    // use crate::cpu::Cpu;
+    // use super::*;
     // #[test]
     // fn decode_op_test_annn() {
     //     let mut cpu = Cpu::new();
