@@ -56,6 +56,28 @@ impl CpuCore {
     /// The interpreter takes the decimal value of Vx, and places the hundreds digit in memory at
     /// location in I, the tens digit at location I+1, and the ones digit at location I+2.
     pub(super) fn op_fx33(&mut self, _cpu: &mut Cpu, _opcode: u16) {}
+
+    /// Fx55 - LD [I], Vx
+    /// Store registers V0 through Vx in memory starting at location 'I'.
+    /// The interpreter copies the values of registers V0 through Vx into memory, starting at
+    /// the address in 'I'.
+    pub(super) fn op_fx55(&mut self, cpu: &mut Cpu, opcode: u16) {
+        let x = ((opcode & 0x0F00) >> 8) as usize;
+
+        for idx in 0..(x + 1) {
+            cpu.mem[cpu.i as usize + idx] = cpu.v[idx];
+        }
+    }
+    /// Fx65 - LD Vx, [I]
+    /// Read registers V0 through Vx from memory starting at location I.
+    /// The interpreter reads values from memory starting at location I into registers V0 through Vx.
+    pub(super) fn op_fx65(&mut self, cpu: &mut Cpu, opcode: u16) {
+        let x = ((opcode & 0x0F00) >> 8) as usize;
+
+        for idx in 0..(x + 1) {
+            cpu.v[idx] = cpu.mem[cpu.i as usize + idx];
+        }
+    }
 }
 
 #[cfg(test)]
@@ -148,13 +170,42 @@ mod tests {
     /// the address in 'I'.
     #[test]
     fn decode_op_test_fx55() {
-        assert!(false);
+        let mut cpu = Cpu::new();
+        let mut core = CpuCore::new();
+
+        cpu.i = 0x502;
+
+        for idx in 0..7 {
+            cpu.v[idx] = 0x10u8 + idx as u8;
+        }
+
+        core.decode_opcode(&mut cpu, 0xF655);
+        for idx in 0..7 {
+            assert_eq!(cpu.v[idx], cpu.mem[0x502 + idx]);
+        }
+
+        assert_eq!(cpu.v[7], 0x0);
     }
+
     /// Fx65 - LD Vx, [I]
     /// Read registers V0 through Vx from memory starting at location I.
     /// The interpreter reads values from memory starting at location I into registers V0 through Vx.
     #[test]
     fn decode_op_test_fx65() {
-        assert!(false);
+        let mut cpu = Cpu::new();
+        let mut core = CpuCore::new();
+
+        cpu.i = 0x602;
+
+        for idx in 0..9 {
+            cpu.v[idx] = 0x20u8 + idx as u8;
+        }
+
+        core.decode_opcode(&mut cpu, 0xF865);
+        for idx in 0..9 {
+            assert_eq!(cpu.mem[0x602 + idx], cpu.v[idx]);
+        }
+
+        assert_eq!(cpu.v[8], 0x0);
     }
 }

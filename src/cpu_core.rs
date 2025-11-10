@@ -90,6 +90,8 @@ impl CpuCore {
             code if code & 0xF0FF == 0xF01E => self.op_fx1e(cpu, opcode),
             code if code & 0xF0FF == 0xF029 => self.op_fx29(cpu, opcode),
             code if code & 0xF0FF == 0xF033 => self.op_fx33(cpu, opcode),
+            code if code & 0xF0FF == 0xF055 => self.op_fx55(cpu, opcode),
+            code if code & 0xF0FF == 0xF065 => self.op_fx65(cpu, opcode),
             // 0x8xy0-0x8xyE - Arithmetic/logic operations
             code => match code & 0xF00F {
                 // 0x8xy0 - Set Vx = Vy.
