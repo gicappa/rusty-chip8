@@ -30,7 +30,12 @@ impl CpuCore {
     ///Fx18 - LD ST, Vx
     /// Set sound timer = Vx.
     /// ST is set equal to the value of Vx.
-    pub(super) fn op_fx18(&mut self, _cpu: &mut Cpu, _opcode: u16) {}
+    pub(super) fn op_fx18(&mut self, cpu: &mut Cpu, opcode: u16) {
+        let x = ((opcode & 0x0F00) >> 8) as usize;
+
+        cpu.v[x] = cpu.sound_timer;
+
+    }
 
     /// Fx1E - ADD I, Vx
     /// Set I = I + Vx.
@@ -94,7 +99,14 @@ mod tests {
     /// ST is set equal to the value of Vx.
     #[test]
     fn decode_op_test_fx18() {
-        assert!(false);
+        let mut cpu = Cpu::new();
+        let mut core = CpuCore::new();
+
+        cpu.sound_timer = 13u8;
+
+        core.decode_opcode(&mut cpu, 0xF218);
+
+        assert_eq!(cpu.v[0x2], cpu.sound_timer);
     }
     /// Fx1E - ADD I, Vx
     /// Set I = I + Vx.
