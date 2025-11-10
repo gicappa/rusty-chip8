@@ -11,7 +11,6 @@ use ratatui::{
 use std::io::{stdout, Stdout};
 use std::time::Duration;
 use std::{collections::VecDeque, time::Instant};
-use minifb::Key::K;
 
 pub struct CpuDebugger {
     logs: Vec<String>,

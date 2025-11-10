@@ -28,7 +28,7 @@ fn main() {
     //     .expect("File not found or not readable");
 
     if !cpu.panic {
-        gpu.splash(&mut cpu);
+        gpu.panic(&mut cpu);
     }
 
     while cpu.running {
