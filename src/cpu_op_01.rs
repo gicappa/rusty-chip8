@@ -122,171 +122,171 @@ impl CpuCore {
 
 #[cfg(test)]
 mod tests {
-    // use crate::cpu::Cpu;
-    // use super::*;
-    //
+    use crate::cpu::Cpu;
+    use super::*;
+
+    #[test]
+    fn decode_op_test_0nnn() {
+        let mut cpu = Cpu::new();
+        let mut cpu_core = CpuCore::new();
+        let last_pc = cpu.pc;
+        let last_sp = cpu.sp;
+
+        cpu_core.decode_opcode(&mut cpu,0x0234);
+
+        assert_eq!(cpu.pc, last_pc);
+        assert_eq!(cpu.sp, last_sp);
+    }
     // #[test]
-    // fn decode_op_test_0nnn() {
+    // fn decode_op_test_00e0() {
     //     let mut cpu = Cpu::new();
-    //     let mut cpu_core = CpuCore::new(&mut cpu);
-    //     let last_pc = cpu_core.cpu.pc;
-    //     let last_sp = cpu_core.cpu.sp;
+    //     let mut cpu_core = CpuEngine::new(&mut cpu);
+    //     cpu_core.decode_opcode(&mut cpu, 0x00e0);
+    //     cpu.vram.iter().for_each(|item| {
+    //         assert_eq!(*item, false);
+    //     });
     //
-    //     cpu_core.decode_opcode(0x0234);
-    //
-    //     assert_eq!(cpu_core.cpu.pc, last_pc);
-    //     assert_eq!(cpu_core.cpu.sp, last_sp);
+    //     assert_eq!(cpu.draw_flag, true);
     // }
-    // // #[test]
-    // // fn decode_op_test_00e0() {
-    // //     let mut cpu = Cpu::new();
-    // //     let mut cpu_core = CpuEngine::new(&mut cpu);
-    // //     cpu_core.decode_opcode(0x00e0);
-    // //     cpu_core.cpu.vram.iter().for_each(|item| {
-    // //         assert_eq!(*item, false);
-    // //     });
-    // //
-    // //     assert_eq!(cpu_core.cpu.draw_flag, true);
-    // // }
-    // #[test]
-    // fn decode_op_test_00ee() {
-    //     let mut cpu = Cpu::new();
-    //     let mut cpu_core = CpuCore::new(&mut cpu);
-    //     cpu_core.cpu.sp = 1;
-    //     cpu_core.cpu.pc = 0x300;
-    //     cpu_core.cpu.stack.push(0x400);
-    //
-    //     cpu_core.decode_opcode(0x00ee);
-    //     assert_eq!(cpu_core.cpu.sp, 0);
-    //     assert_eq!(cpu_core.cpu.stack.len(), 0);
-    //     assert_eq!(cpu_core.cpu.pc, 0x400);
-    // }
-    // #[test]
-    // fn decode_op_test_1nnn() {
-    //     let mut cpu = Cpu::new();
-    //     let mut cpu_core = CpuCore::new(&mut cpu);
-    //     cpu_core.decode_opcode(0x1234);
-    //     assert_eq!(cpu_core.cpu.pc, 0x234);
-    // }
-    // #[test]
-    // fn decode_op_test_2nnn() {
-    //     let mut cpu = Cpu::new();
-    //     let mut cpu_core = CpuCore::new(&mut cpu);
-    //     cpu_core.cpu.pc = 0x300;
-    //
-    //     cpu_core.decode_opcode(0x2345);
-    //
-    //     assert_eq!(cpu_core.cpu.sp, 1);
-    //     assert_eq!(cpu_core.cpu.stack[0], 0x300);
-    //     assert_eq!(cpu_core.cpu.pc, 0x345);
-    // }
-    // #[test]
-    // fn decode_op_test_op_3xkk_x_equals_kk() {
-    //     let mut cpu = Cpu::new();
-    //     let mut cpu_core = CpuCore::new(&mut cpu);
-    //     cpu_core.cpu.pc = 0x300;
-    //     cpu_core.cpu.v[4] = 0x05;
-    //
-    //     cpu_core.decode_opcode(0x3405);
-    //
-    //     assert_eq!(cpu_core.cpu.pc, 0x302);
-    // }
-    // #[test]
-    // fn decode_op_test_op_3xkk_x_not_equals_kk() {
-    //     let mut cpu = Cpu::new();
-    //     let mut cpu_core = CpuCore::new(&mut cpu);
-    //     cpu_core.cpu.pc = 0x300;
-    //     cpu_core.cpu.v[4] = 0x05;
-    //
-    //     cpu_core.decode_opcode(0x3403);
-    //
-    //     assert_eq!(cpu_core.cpu.pc, 0x300);
-    // }
-    // #[test]
-    // fn decode_op_test_op_4xkk_x_equals_kk() {
-    //     let mut cpu = Cpu::new();
-    //     let mut cpu_core = CpuCore::new(&mut cpu);
-    //     cpu_core.cpu.pc = 0x300;
-    //     cpu_core.cpu.v[4] = 0x05;
-    //
-    //     cpu_core.decode_opcode(0x4405);
-    //
-    //     assert_eq!(cpu_core.cpu.pc, 0x300);
-    // }
-    // #[test]
-    // fn decode_op_test_op_4xkk_x_not_equals_kk() {
-    //     let mut cpu = Cpu::new();
-    //     let mut cpu_core = CpuCore::new(&mut cpu);
-    //     cpu_core.cpu.pc = 0x300;
-    //     cpu_core.cpu.v[4] = 0x05;
-    //
-    //     cpu_core.decode_opcode(0x4403);
-    //
-    //     assert_eq!(cpu_core.cpu.pc, 0x302);
-    // }
-    // #[test]
-    // fn decode_op_test_op_5xy0_vx_equals_vy() {
-    //     let mut cpu = Cpu::new();
-    //     let mut cpu_core = CpuCore::new(&mut cpu);
-    //     cpu_core.cpu.pc = 0x300;
-    //     cpu_core.cpu.v[4] = 0x05;
-    //     cpu_core.cpu.v[0] = 0x05;
-    //     cpu_core.decode_opcode(0x5400);
-    //
-    //     assert_eq!(cpu_core.cpu.pc, 0x302);
-    // }
-    // #[test]
-    // fn decode_op_test_op_5xy0_vx_not_equals_vy() {
-    //     let mut cpu = Cpu::new();
-    //     let mut cpu_core = CpuCore::new(&mut cpu);
-    //     cpu_core.cpu.pc = 0x300;
-    //     cpu_core.cpu.v[4] = 0x05;
-    //     cpu_core.cpu.v[0] = 0x03;
-    //
-    //     cpu_core.decode_opcode(0x5400);
-    //
-    //     assert_eq!(cpu_core.cpu.pc, 0x300);
-    // }
-    // #[test]
-    // fn decode_op_test_op_6xkk() {
-    //     let mut cpu = Cpu::new();
-    //     let mut cpu_core = CpuCore::new(&mut cpu);
-    //     cpu_core.cpu.v[4] = 0x05;
-    //     cpu_core.decode_opcode(0x6483);
-    //
-    //     assert_eq!(cpu_core.cpu.v[4], 0x83);
-    // }
-    // #[test]
-    // fn decode_op_test_op_7xkk() {
-    //     let mut cpu = Cpu::new();
-    //     let mut cpu_core = CpuCore::new(&mut cpu);
-    //     cpu_core.cpu.v[4] = 0x05;
-    //
-    //     cpu_core.decode_opcode(0x7483);
-    //
-    //     assert_eq!(cpu_core.cpu.v[4], 0x88);
-    // }
-    // #[test]
-    // fn decode_op_test_op_9xy0_vx_equals_vy() {
-    //     let mut cpu = Cpu::new();
-    //     let mut cpu_core = CpuCore::new(&mut cpu);
-    //     cpu_core.cpu.pc = 0x300;
-    //     cpu_core.cpu.v[4] = 0x05;
-    //     cpu_core.cpu.v[0] = 0x05;
-    //     cpu_core.decode_opcode(0x9400);
-    //
-    //     assert_eq!(cpu_core.cpu.pc, 0x300);
-    // }
-    // #[test]
-    // fn decode_op_test_op_9xy0_vx_not_equals_vy() {
-    //     let mut cpu = Cpu::new();
-    //     let mut cpu_core = CpuCore::new(&mut cpu);
-    //     cpu_core.cpu.pc = 0x300;
-    //     cpu_core.cpu.v[4] = 0x05;
-    //     cpu_core.cpu.v[0] = 0x03;
-    //
-    //     cpu_core.decode_opcode(0x9400);
-    //
-    //     assert_eq!(cpu_core.cpu.pc, 0x302);
-    // }
+    #[test]
+    fn decode_op_test_00ee() {
+        let mut cpu = Cpu::new();
+        let mut cpu_core = CpuCore::new();
+        cpu.sp = 1;
+        cpu.pc = 0x300;
+        cpu.stack.push(0x400);
+
+        cpu_core.decode_opcode(&mut cpu, 0x00ee);
+        assert_eq!(cpu.sp, 0);
+        assert_eq!(cpu.stack.len(), 0);
+        assert_eq!(cpu.pc, 0x400);
+    }
+    #[test]
+    fn decode_op_test_1nnn() {
+        let mut cpu = Cpu::new();
+        let mut cpu_core = CpuCore::new();
+        cpu_core.decode_opcode(&mut cpu, 0x1234);
+        assert_eq!(cpu.pc, 0x234);
+    }
+    #[test]
+    fn decode_op_test_2nnn() {
+        let mut cpu = Cpu::new();
+        let mut cpu_core = CpuCore::new();
+        cpu.pc = 0x300;
+
+        cpu_core.decode_opcode(&mut cpu, 0x2345);
+
+        assert_eq!(cpu.sp, 1);
+        assert_eq!(cpu.stack[0], 0x300);
+        assert_eq!(cpu.pc, 0x345);
+    }
+    #[test]
+    fn decode_op_test_op_3xkk_x_equals_kk() {
+        let mut cpu = Cpu::new();
+        let mut cpu_core = CpuCore::new();
+        cpu.pc = 0x300;
+        cpu.v[4] = 0x05;
+
+        cpu_core.decode_opcode(&mut cpu, 0x3405);
+
+        assert_eq!(cpu.pc, 0x302);
+    }
+    #[test]
+    fn decode_op_test_op_3xkk_x_not_equals_kk() {
+        let mut cpu = Cpu::new();
+        let mut cpu_core = CpuCore::new();
+        cpu.pc = 0x300;
+        cpu.v[4] = 0x05;
+
+        cpu_core.decode_opcode(&mut cpu, 0x3403);
+
+        assert_eq!(cpu.pc, 0x300);
+    }
+    #[test]
+    fn decode_op_test_op_4xkk_x_equals_kk() {
+        let mut cpu = Cpu::new();
+        let mut cpu_core = CpuCore::new();
+        cpu.pc = 0x300;
+        cpu.v[4] = 0x05;
+
+        cpu_core.decode_opcode(&mut cpu, 0x4405);
+
+        assert_eq!(cpu.pc, 0x300);
+    }
+    #[test]
+    fn decode_op_test_op_4xkk_x_not_equals_kk() {
+        let mut cpu = Cpu::new();
+        let mut cpu_core = CpuCore::new();
+        cpu.pc = 0x300;
+        cpu.v[4] = 0x05;
+
+        cpu_core.decode_opcode(&mut cpu, 0x4403);
+
+        assert_eq!(cpu.pc, 0x302);
+    }
+    #[test]
+    fn decode_op_test_op_5xy0_vx_equals_vy() {
+        let mut cpu = Cpu::new();
+        let mut cpu_core = CpuCore::new();
+        cpu.pc = 0x300;
+        cpu.v[4] = 0x05;
+        cpu.v[0] = 0x05;
+        cpu_core.decode_opcode(&mut cpu, 0x5400);
+
+        assert_eq!(cpu.pc, 0x302);
+    }
+    #[test]
+    fn decode_op_test_op_5xy0_vx_not_equals_vy() {
+        let mut cpu = Cpu::new();
+        let mut cpu_core = CpuCore::new();
+        cpu.pc = 0x300;
+        cpu.v[4] = 0x05;
+        cpu.v[0] = 0x03;
+
+        cpu_core.decode_opcode(&mut cpu, 0x5400);
+
+        assert_eq!(cpu.pc, 0x300);
+    }
+    #[test]
+    fn decode_op_test_op_6xkk() {
+        let mut cpu = Cpu::new();
+        let mut cpu_core = CpuCore::new();
+        cpu.v[4] = 0x05;
+        cpu_core.decode_opcode(&mut cpu, 0x6483);
+
+        assert_eq!(cpu.v[4], 0x83);
+    }
+    #[test]
+    fn decode_op_test_op_7xkk() {
+        let mut cpu = Cpu::new();
+        let mut cpu_core = CpuCore::new();
+        cpu.v[4] = 0x05;
+
+        cpu_core.decode_opcode(&mut cpu, 0x7483);
+
+        assert_eq!(cpu.v[4], 0x88);
+    }
+    #[test]
+    fn decode_op_test_op_9xy0_vx_equals_vy() {
+        let mut cpu = Cpu::new();
+        let mut cpu_core = CpuCore::new();
+        cpu.pc = 0x300;
+        cpu.v[4] = 0x05;
+        cpu.v[0] = 0x05;
+        cpu_core.decode_opcode(&mut cpu, 0x9400);
+
+        assert_eq!(cpu.pc, 0x300);
+    }
+    #[test]
+    fn decode_op_test_op_9xy0_vx_not_equals_vy() {
+        let mut cpu = Cpu::new();
+        let mut cpu_core = CpuCore::new();
+        cpu.pc = 0x300;
+        cpu.v[4] = 0x05;
+        cpu.v[0] = 0x03;
+
+        cpu_core.decode_opcode(&mut cpu, 0x9400);
+
+        assert_eq!(cpu.pc, 0x302);
+    }
 }
