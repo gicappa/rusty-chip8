@@ -10,7 +10,6 @@ impl CpuCore {
     /// This instruction is only used on the old computers on which Chip-8 was
     /// originally implemented. It is ignored by modern interpreters.
     pub(super) fn op_0nnn(&mut self, _cpu: &mut Cpu, _opcode: u16) {
-        print!(".")
         // NO-OP Ignored
     }
 

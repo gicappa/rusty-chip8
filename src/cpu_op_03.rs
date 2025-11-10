@@ -59,7 +59,7 @@ impl CpuCore {
         }
 
         // for i in 0..n {
-        //     if base_vram + i <= W * H {
+        //     if base_vram + i <= WXH {
         //         let pixels = format!("{:b}", self.memory[base_mem + i]);
         //
         //         for x in pixels.chars() {

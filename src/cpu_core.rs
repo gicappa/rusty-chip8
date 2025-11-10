@@ -13,10 +13,13 @@ impl CpuCore {
     }
 
     pub fn tick(&mut self, cpu: &mut Cpu) {
+        if !cpu.rom_loaded {
+            return;
+        }
+
         cpu.draw_flag = false;
 
         let opcode = self.fetch_opcode(cpu);
-
         self.decode_opcode(cpu, opcode);
 
         if cpu.delay_timer > 0 {
@@ -30,7 +33,6 @@ impl CpuCore {
                 println!("beep!");
             }
         }
-
         cpu.pc += 2;
     }
 
@@ -127,6 +129,8 @@ impl CpuCore {
 
             cpu.mem[START_ADDRESS + i] = byte;
         }
+
+        cpu.rom_loaded = true;
 
         Ok(())
     }

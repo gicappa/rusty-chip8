@@ -71,31 +71,43 @@ impl CpuDebugger {
             f.render_widget(logs, outer_layout[1]);
 
             // Registers
-            let mut rows: Vec<Row> = Vec::new();
-            rows.push(Row::new(vec![
+            let mut pcs: Vec<Row> = Vec::new();
+            pcs.push(Row::new(vec![
                 Cell::from("PC"), Cell::from(format!("{:#06X}", cpu.pc)),
                 Cell::from("SP"), Cell::from(format!("{}", cpu.sp)),
                 Cell::from(" I"), Cell::from(format!("{:#06X}", cpu.i)),
             ]));
-
+            let mut rows: Vec<Row> = Vec::new();
             for r in 0..2 {
                 let mut cells = Vec::new();
                 for c in 0..8 {
                     let idx = r * 8 + c;
-                    cells.push(Cell::from(format!("V{:X}", idx)));
-                    cells.push(Cell::from(format!("{:#04X}", cpu.v[idx])));
+                    cells.push(Cell::from(format!("V{}", idx)));
+                    cells.push(Cell::from(format!("{:#02X}", cpu.v[idx])));
                 }
+
                 rows.push(Row::new(cells));
             }
+
+            let _pcs = Table::new(pcs, [
+                Constraint::Length(3), Constraint::Length(8),
+                Constraint::Length(3), Constraint::Length(8),
+                Constraint::Length(2), Constraint::Length(8),
+            ]).block(Block::default().borders(Borders::ALL).title(" CPU "));
 
             let regs = Table::new(rows, [
                 Constraint::Length(3), Constraint::Length(8),
                 Constraint::Length(3), Constraint::Length(8),
-                Constraint::Length(2), Constraint::Length(8),
-            ])
-                .block(Block::default().borders(Borders::ALL).title(" CPU "));
+                Constraint::Length(3), Constraint::Length(8),
+                Constraint::Length(3), Constraint::Length(8),
+                Constraint::Length(3), Constraint::Length(8),
+                Constraint::Length(3), Constraint::Length(8),
+                Constraint::Length(3), Constraint::Length(8),
+                Constraint::Length(3), Constraint::Length(8),
+            ]).block(Block::default().borders(Borders::ALL).title(" CPU "));
 
             f.render_widget(regs, inner_layout[0]);
+            // f.render_widget(pcs, inner_layout[0]);
 
             // FPS
             let mut avg = 0.0;
