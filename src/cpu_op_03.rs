@@ -1,7 +1,7 @@
 use crate::config::W;
-use rand::random;
 use crate::cpu::Cpu;
 use crate::cpu_core::CpuCore;
+use rand::random;
 
 impl CpuCore {
     // Operations //////////////////////////////////////////////////////////////
@@ -44,35 +44,23 @@ impl CpuCore {
     /// it wraps around to the opposite side of the screen. See instruction 8xy3 for more information
     /// on XOR, and section 2.4, Display, for more information on the Chip-8 screen and sprites.
     pub(super) fn op_dxyn(&mut self, cpu: &mut Cpu, opcode: u16) {
-        let x = (opcode & 0x0F00 >> 8) as usize;
-        let y = (opcode & 0x00F0 >> 4) as usize;
-        let _n = (opcode & 0x000F) as usize;
-
-        let base_vram = cpu.v[x] as usize + (cpu.v[y] as usize * W);
+        let x = ((opcode & 0x0F00) >> 8) as usize;
+        let y = ((opcode & 0x00F0) >> 4) as usize;
+        let n = (opcode & 0x000F) as usize;
+        let vx = cpu.v[x] as usize;
+        let vy = cpu.v[y] as usize;
         let base_mem = cpu.i as usize;
 
+        // TODO: handle the wrap to the opposite side of the screen
+        for j in 0..n {
+            let vram_ptr = vx + (vy + j) * W;
 
-        let pixels = format!("{:b}", cpu.mem[base_mem]);
+            let pixels = format!("{:08b}", cpu.mem[base_mem + j]);
 
-        for x in pixels.chars() {
-            cpu.vram[base_vram] ^= x != '0'
+            for (idx, bit) in pixels.char_indices() {
+                cpu.vram[vram_ptr + idx] ^= bit != '0';
+            }
         }
-
-        // for i in 0..n {
-        //     if base_vram + i <= WXH {
-        //         let pixels = format!("{:b}", self.memory[base_mem + i]);
-        //
-        //         for x in pixels.chars() {
-        //             self.display[base_vram + i] ^= if x == '0' { 0xff } else { 0x00 }
-        //         }
-        //
-        //         if self.display[base_vram + i] == 0 && self.memory[base_mem + i] == 0xff {
-        //             self.v[0xf] = 1;
-        //         } else {
-        //             self.v[0xf] = 0;
-        //         }
-        //     }
-        // }
     }
 
     /// Ex9E - SKP Vx
@@ -90,8 +78,8 @@ impl CpuCore {
 
 #[cfg(test)]
 mod tests {
-    use crate::cpu::Cpu;
     use super::*;
+    use crate::cpu::Cpu;
     #[test]
     fn decode_op_test_annn() {
         let mut cpu = Cpu::new();
@@ -150,7 +138,23 @@ mod tests {
     /// on XOR, and section 2.4, Display, for more information on the Chip-8 screen and sprites.
     #[test]
     fn decode_op_test_dxyn() {
-        assert!(false);
+        let mut cpu = Cpu::new();
+        let mut cpu_core = CpuCore::new();
+        cpu.i = 0x400;
+
+        cpu.mem[0x400] = 0x01;
+        cpu.mem[0x401] = 0x02;
+        cpu.mem[0x402] = 0x04;
+        cpu.mem[0x403] = 0x08;
+
+        cpu.v[2] = 0x20;
+        cpu.v[3] = 0x10;
+
+        cpu_core.decode_opcode(&mut cpu, 0xD234);
+        assert!(cpu.vram[W * 0x10 + 0x20 + 7]);
+        assert!(cpu.vram[W * 0x11 + 0x20 + 6]);
+        assert!(cpu.vram[W * 0x12 + 0x20 + 5]);
+        assert!(cpu.vram[W * 0x13 + 0x20 + 4]);
     }
     /// Ex9E - SKP Vx
     /// Skip next instruction if key with the value of Vx is pressed.

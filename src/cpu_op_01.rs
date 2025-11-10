@@ -1,4 +1,4 @@
-use crate::config::{H, W};
+use crate::config::WXH;
 use crate::cpu::Cpu;
 use crate::cpu_core::CpuCore;
 
@@ -16,7 +16,7 @@ impl CpuCore {
     ///00E0 - CLS
     /// Clear the display.
     pub(super) fn op_00e0(&mut self, cpu: &mut Cpu, _opcode: u16) {
-        cpu.vram = [false; H * W];
+        cpu.vram = [false; WXH];
         cpu.draw_flag = true;
     }
 
@@ -122,8 +122,8 @@ impl CpuCore {
 
 #[cfg(test)]
 mod tests {
-    use crate::cpu::Cpu;
     use super::*;
+    use crate::cpu::Cpu;
 
     #[test]
     fn decode_op_test_0nnn() {
@@ -132,22 +132,22 @@ mod tests {
         let last_pc = cpu.pc;
         let last_sp = cpu.sp;
 
-        cpu_core.decode_opcode(&mut cpu,0x0234);
+        cpu_core.decode_opcode(&mut cpu, 0x0234);
 
         assert_eq!(cpu.pc, last_pc);
         assert_eq!(cpu.sp, last_sp);
     }
-    // #[test]
-    // fn decode_op_test_00e0() {
-    //     let mut cpu = Cpu::new();
-    //     let mut cpu_core = CpuEngine::new(&mut cpu);
-    //     cpu_core.decode_opcode(&mut cpu, 0x00e0);
-    //     cpu.vram.iter().for_each(|item| {
-    //         assert_eq!(*item, false);
-    //     });
-    //
-    //     assert_eq!(cpu.draw_flag, true);
-    // }
+    #[test]
+    fn decode_op_test_00e0() {
+        let mut cpu = Cpu::new();
+        let mut cpu_core = CpuCore::new();
+        cpu_core.decode_opcode(&mut cpu, 0x00e0);
+        cpu.vram.iter().for_each(|item| {
+            assert_eq!(*item, false);
+        });
+
+        assert_eq!(cpu.draw_flag, true);
+    }
     #[test]
     fn decode_op_test_00ee() {
         let mut cpu = Cpu::new();
