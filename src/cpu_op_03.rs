@@ -90,81 +90,81 @@ impl CpuCore {
 
 #[cfg(test)]
 mod tests {
-    // use crate::cpu::Cpu;
-    // use super::*;
-    // #[test]
-    // fn decode_op_test_annn() {
-    //     let mut cpu = Cpu::new();
-    //     let mut cpu_core = CpuCore::new(&mut cpu);
-    //     cpu_core.cpu.i = 0x444;
-    //
-    //     cpu_core.decode_opcode(0xA555);
-    //
-    //     assert_eq!(cpu_core.cpu.i, 0x555);
-    // }
-    // #[test]
-    // fn decode_op_test_bnnn() {
-    //     let mut cpu = Cpu::new();
-    //     let mut cpu_core = CpuCore::new(&mut cpu);
-    //     cpu_core.cpu.pc = 0x400;
-    //     cpu_core.cpu.v[0] = 0x10;
-    //
-    //     cpu_core.decode_opcode(0xB500);
-    //
-    //     assert_eq!(cpu_core.cpu.pc, 0x510);
-    // }
-    // #[test]
-    // fn decode_op_test_cxkk_and_0() {
-    //     let mut cpu = Cpu::new();
-    //     let mut cpu_core = CpuCore::new(&mut cpu);
-    //     cpu_core.cpu.v[5] = 0x77;
-    //
-    //     for _ in 0..5 {
-    //         cpu_core.decode_opcode(0xC500);
-    //         assert_eq!(cpu_core.cpu.v[5], 0x00);
-    //     }
-    // }
-    // #[test]
-    // fn decode_op_test_cxkk_rnd() {
-    //     let mut cpu = Cpu::new();
-    //     let mut cpu_core = CpuCore::new(&mut cpu);
-    //     cpu_core.cpu.v[5] = 0x77;
-    //
-    //     let mut res: Vec<u8> = Vec::new();
-    //
-    //     for _ in 0..9 {
-    //         cpu_core.decode_opcode(0xC5FF);
-    //         res.push(cpu_core.cpu.v[5]);
-    //     }
-    //
-    //     assert!(!res.iter().all(|x| *x == res[0]));
-    // }
-    // /// Dxyn - DRW Vx, Vy, nibble
-    // /// Display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision.
-    // ///
-    // /// The interpreter reads n bytes from memory, starting at the address stored in I. These bytes
-    // /// are then displayed as sprites on screen at coordinates (Vx, Vy). Sprites are XORed onto the
-    // /// existing screen. If this causes any pixels to be erased, VF is set to 1, otherwise it is set
-    // /// to 0. If the sprite is positioned so part of it is outside the coordinates of the display,
-    // /// it wraps around to the opposite side of the screen. See instruction 8xy3 for more information
-    // /// on XOR, and section 2.4, Display, for more information on the Chip-8 screen and sprites.
-    // #[test]
-    // fn decode_op_test_dxyn() {
-    //     assert!(false);
-    // }
-    // /// Ex9E - SKP Vx
-    // /// Skip next instruction if key with the value of Vx is pressed.
-    // /// Checks the keyboard, and if the key corresponding to the value of Vx is currently in the down
-    // /// position, PC is increased by 2.
-    // #[test]
-    // fn decode_op_test_ex9e() {
-    //     assert!(false);
-    // }
-    // /// ExA1 - SKNP Vx
-    // /// Skip next instruction if key with the value of Vx is not pressed.
-    // /// Checks the keyboard, and if the key corresponding to the value of Vx is currently in the up position, PC is increased by 2.
-    // #[test]
-    // fn decode_op_test_exa1() {
-    //     assert!(false);
-    // }
+    use crate::cpu::Cpu;
+    use super::*;
+    #[test]
+    fn decode_op_test_annn() {
+        let mut cpu = Cpu::new();
+        let mut cpu_core = CpuCore::new();
+        cpu.i = 0x444;
+
+        cpu_core.decode_opcode(&mut cpu, 0xA555);
+
+        assert_eq!(cpu.i, 0x555);
+    }
+    #[test]
+    fn decode_op_test_bnnn() {
+        let mut cpu = Cpu::new();
+        let mut cpu_core = CpuCore::new();
+        cpu.pc = 0x400;
+        cpu.v[0] = 0x10;
+
+        cpu_core.decode_opcode(&mut cpu, 0xB500);
+
+        assert_eq!(cpu.pc, 0x510);
+    }
+    #[test]
+    fn decode_op_test_cxkk_and_0() {
+        let mut cpu = Cpu::new();
+        let mut cpu_core = CpuCore::new();
+        cpu.v[5] = 0x77;
+
+        for _ in 0..5 {
+            cpu_core.decode_opcode(&mut cpu, 0xC500);
+            assert_eq!(cpu.v[5], 0x00);
+        }
+    }
+    #[test]
+    fn decode_op_test_cxkk_rnd() {
+        let mut cpu = Cpu::new();
+        let mut cpu_core = CpuCore::new();
+        cpu.v[5] = 0x77;
+
+        let mut res: Vec<u8> = Vec::new();
+
+        for _ in 0..9 {
+            cpu_core.decode_opcode(&mut cpu, 0xC5FF);
+            res.push(cpu.v[5]);
+        }
+
+        assert!(!res.iter().all(|x| *x == res[0]));
+    }
+    /// Dxyn - DRW Vx, Vy, nibble
+    /// Display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision.
+    ///
+    /// The interpreter reads n bytes from memory, starting at the address stored in I. These bytes
+    /// are then displayed as sprites on screen at coordinates (Vx, Vy). Sprites are XORed onto the
+    /// existing screen. If this causes any pixels to be erased, VF is set to 1, otherwise it is set
+    /// to 0. If the sprite is positioned so part of it is outside the coordinates of the display,
+    /// it wraps around to the opposite side of the screen. See instruction 8xy3 for more information
+    /// on XOR, and section 2.4, Display, for more information on the Chip-8 screen and sprites.
+    #[test]
+    fn decode_op_test_dxyn() {
+        assert!(false);
+    }
+    /// Ex9E - SKP Vx
+    /// Skip next instruction if key with the value of Vx is pressed.
+    /// Checks the keyboard, and if the key corresponding to the value of Vx is currently in the down
+    /// position, PC is increased by 2.
+    #[test]
+    fn decode_op_test_ex9e() {
+        assert!(false);
+    }
+    /// ExA1 - SKNP Vx
+    /// Skip next instruction if key with the value of Vx is not pressed.
+    /// Checks the keyboard, and if the key corresponding to the value of Vx is currently in the up position, PC is increased by 2.
+    #[test]
+    fn decode_op_test_exa1() {
+        assert!(false);
+    }
 }
