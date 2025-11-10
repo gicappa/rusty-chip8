@@ -24,8 +24,11 @@ impl CpuDebugger {
 
         // setup terminal
         enable_raw_mode().unwrap();
+
         let mut stdout = stdout();
+
         execute!(stdout, EnterAlternateScreen, EnableMouseCapture).unwrap();
+
         let backend = CrosstermBackend::new(stdout);
         let terminal = Terminal::new(backend).unwrap();
 
@@ -51,8 +54,9 @@ impl CpuDebugger {
             let outer_layout = Layout::default()
                 .direction(Direction::Vertical)
                 .constraints(vec![
-                    Constraint::Percentage(20),
-                    Constraint::Percentage(80),
+                    Constraint::Length(3),
+                    Constraint::Length(4),
+                    Constraint::Fill(1),
                 ])
                 .split(f.area());
 
@@ -65,19 +69,34 @@ impl CpuDebugger {
                 .split(outer_layout[0]);
 
             // Logs
-            let log_text = self.logs.iter().rev().take(200).cloned().collect::<Vec<_>>().join("\n");
+            let log_text = self.logs.iter()
+                .rev().take(200).cloned().collect::<Vec<_>>().join("\n");
+
             let logs = Paragraph::new(log_text)
                 .block(Block::default().borders(Borders::ALL).title(" Logs "));
-            f.render_widget(logs, outer_layout[1]);
 
-            // Registers
-            let mut pcs: Vec<Row> = Vec::new();
-            pcs.push(Row::new(vec![
+            f.render_widget(logs, outer_layout[2]);
+
+            let mut cpu_values: Vec<Row> = Vec::new();
+            cpu_values.push(Row::new(vec![
                 Cell::from("PC"), Cell::from(format!("{:#06X}", cpu.pc)),
                 Cell::from("SP"), Cell::from(format!("{}", cpu.sp)),
                 Cell::from(" I"), Cell::from(format!("{:#06X}", cpu.i)),
+                Cell::from("Draw"), Cell::from(format!("[{0}]", if cpu.draw_flag { "0" } else { "1" })),
+                Cell::from("ROM "), Cell::from(format!("[{:}]", if cpu.rom_loaded { "0" } else { "1" })),
             ]));
-            let mut rows: Vec<Row> = Vec::new();
+
+            let cpu_var = Table::new(cpu_values, [
+                Constraint::Length(2), Constraint::Length(8),
+                Constraint::Length(2), Constraint::Length(3),
+                Constraint::Length(2), Constraint::Length(8),
+                Constraint::Length(4), Constraint::Length(6),
+                Constraint::Length(4), Constraint::Length(7),
+            ]).block(Block::default().borders(Borders::ALL).title(" CPU "));
+
+            f.render_widget(cpu_var, inner_layout[0]);
+
+            let mut regs_values: Vec<Row> = Vec::new();
             for r in 0..2 {
                 let mut cells = Vec::new();
                 for c in 0..8 {
@@ -85,29 +104,21 @@ impl CpuDebugger {
                     cells.push(Cell::from(format!("V{}", idx)));
                     cells.push(Cell::from(format!("{:#02X}", cpu.v[idx])));
                 }
-
-                rows.push(Row::new(cells));
+                regs_values.push(Row::new(cells));
             }
 
-            let _pcs = Table::new(pcs, [
+            let regs = Table::new(regs_values, [
                 Constraint::Length(3), Constraint::Length(8),
                 Constraint::Length(3), Constraint::Length(8),
-                Constraint::Length(2), Constraint::Length(8),
-            ]).block(Block::default().borders(Borders::ALL).title(" CPU "));
+                Constraint::Length(3), Constraint::Length(8),
+                Constraint::Length(3), Constraint::Length(8),
+                Constraint::Length(3), Constraint::Length(8),
+                Constraint::Length(3), Constraint::Length(8),
+                Constraint::Length(3), Constraint::Length(8),
+                Constraint::Length(3), Constraint::Length(8),
+            ]).block(Block::default().borders(Borders::ALL).title(" Regs "));
 
-            let regs = Table::new(rows, [
-                Constraint::Length(3), Constraint::Length(8),
-                Constraint::Length(3), Constraint::Length(8),
-                Constraint::Length(3), Constraint::Length(8),
-                Constraint::Length(3), Constraint::Length(8),
-                Constraint::Length(3), Constraint::Length(8),
-                Constraint::Length(3), Constraint::Length(8),
-                Constraint::Length(3), Constraint::Length(8),
-                Constraint::Length(3), Constraint::Length(8),
-            ]).block(Block::default().borders(Borders::ALL).title(" CPU "));
-
-            f.render_widget(regs, inner_layout[0]);
-            // f.render_widget(pcs, inner_layout[0]);
+            f.render_widget(regs, outer_layout[1]);
 
             // FPS
             let mut avg = 0.0;
@@ -150,7 +161,6 @@ impl CpuDebugger {
         Ok(())
     }
 }
-
 
 fn ascii_sparkline(hist: &VecDeque<f32>, min: f32, max: f32) -> String {
     const BARS: &[char] = &['▁', '▂', '▃', '▄', '▅', '▆', '▇', '█'];

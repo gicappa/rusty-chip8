@@ -19,7 +19,7 @@ use crate::gpu::Gpu;
 fn main() {
     let mut cpu = Cpu::new();
     let mut core = CpuCore::new();
-    let mut gpu = Gpu::new("Rusty Chip-8 Emulator");
+    let mut gpu = Gpu::new("0xID8");
     let mut clock = Clock::new();
     let mut cpu_debugger = CpuDebugger::new();
 
