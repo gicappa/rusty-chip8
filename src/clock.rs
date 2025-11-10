@@ -22,9 +22,7 @@ impl Clock {
 
     pub fn stop_and_wait(&mut self) {
         self.end_time = Instant::now();
-
         let elapsed = self.end_time - self.start_time;
-
         if elapsed < INTERVAL {
             sleep(INTERVAL - elapsed);
             self.end_time += INTERVAL;

@@ -7,7 +7,11 @@ impl CpuCore {
     /// Fx07 - LD Vx, DT
     /// Set Vx = delay timer value.
     /// The value of DT is placed into Vx.
-    pub(super) fn op_fx07(&mut self, _cpu: &mut Cpu, _opcode: u16) {}
+    pub(super) fn op_fx07(&mut self, cpu: &mut Cpu, opcode: u16) {
+        let x = ((opcode & 0x0F00) >> 8) as usize;
+
+        cpu.v[x] = cpu.delay_timer;
+    }
 
     /// Fx0A - LD Vx, K
     /// Wait for a key press, store the value of the key in Vx.
@@ -17,7 +21,11 @@ impl CpuCore {
     ///Fx15 - LD DT, Vx
     /// Set delay timer = Vx.
     /// DT is set equal to the value of Vx.
-    pub(super) fn op_fx15(&mut self, _cpu: &mut Cpu, _opcode: u16) {}
+    pub(super) fn op_fx15(&mut self, cpu: &mut Cpu, opcode: u16) {
+        let x = ((opcode & 0x0F00) >> 8) as usize;
+
+        cpu.delay_timer = cpu.v[x];
+    }
 
     ///Fx18 - LD ST, Vx
     /// Set sound timer = Vx.
@@ -44,12 +52,22 @@ impl CpuCore {
 
 #[cfg(test)]
 mod tests {
+    use crate::cpu::Cpu;
+    use crate::cpu_core::CpuCore;
+
     /// Fx07 - LD Vx, DT
     /// Set Vx = delay timer value.
     /// The value of DT is placed into Vx.
     #[test]
     fn decode_op_test_fx07() {
-        assert!(false);
+        let mut cpu = Cpu::new();
+        let mut core = CpuCore::new();
+
+        cpu.delay_timer = 123u8;
+
+        core.decode_opcode(&mut cpu, 0xFA07);
+
+        assert_eq!(cpu.v[0xA], cpu.delay_timer);
     }
     /// Fx0A - LD Vx, K
     /// Wait for a key press, store the value of the key in Vx.
@@ -63,7 +81,13 @@ mod tests {
     /// DT is set equal to the value of Vx.
     #[test]
     fn decode_op_test_fx15() {
-        assert!(false);
+        let mut cpu = Cpu::new();
+        let mut core = CpuCore::new();
+        cpu.v[0xB] = 34u8;
+
+        core.decode_opcode(&mut cpu, 0xFB15);
+
+        assert_eq!(cpu.delay_timer, cpu.v[0xB]);
     }
     ///Fx18 - LD ST, Vx
     /// Set sound timer = Vx.
@@ -95,17 +119,19 @@ mod tests {
     fn decode_op_test_fx33() {
         assert!(false);
     }
+    /// Fx55 - LD [I], Vx
+    /// Store registers V0 through Vx in memory starting at location 'I'.
+    /// The interpreter copies the values of registers V0 through Vx into memory, starting at
+    /// the address in 'I'.
+    #[test]
+    fn decode_op_test_fx55() {
+        assert!(false);
+    }
+    /// Fx65 - LD Vx, [I]
+    /// Read registers V0 through Vx from memory starting at location I.
+    /// The interpreter reads values from memory starting at location I into registers V0 through Vx.
+    #[test]
+    fn decode_op_test_fx65() {
+        assert!(false);
+    }
 }
-/*
-
-Fx55 - LD [I], Vx
-Store registers V0 through Vx in memory starting at location I.
-
-The interpreter copies the values of registers V0 through Vx into memory, starting at the address in I.
-
-
-Fx65 - LD Vx, [I]
-Read registers V0 through Vx from memory starting at location I.
-
-The interpreter reads values from memory starting at location I into registers V0 through Vx.
- */
