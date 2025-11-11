@@ -8,7 +8,7 @@ impl CpuCore {
     /// Set Vx = delay timer value.
     /// The value of DT is placed into Vx.
     pub(super) fn op_fx07(&mut self, cpu: &mut Cpu, opcode: u16) {
-        let x = ((opcode & 0x0F00) >> 8) as usize;
+        let x = usize::from((opcode >> 8) & 0xF);
 
         cpu.v[x] = cpu.delay_timer;
     }
@@ -16,13 +16,15 @@ impl CpuCore {
     /// Fx0A - LD Vx, K
     /// Wait for a key press, store the value of the key in Vx.
     /// All execution stops until a key is pressed, then the value of that key is stored in Vx.
-    pub(super) fn op_fx0a(&mut self, _cpu: &mut Cpu, _opcode: u16) {}
+    pub(super) fn op_fx0a(&mut self, cpu: &mut Cpu, opcode: u16) {
+        let x = usize::from((opcode >> 8) & 0xF);
+    }
 
     ///Fx15 - LD DT, Vx
     /// Set delay timer = Vx.
     /// DT is set equal to the value of Vx.
     pub(super) fn op_fx15(&mut self, cpu: &mut Cpu, opcode: u16) {
-        let x = ((opcode & 0x0F00) >> 8) as usize;
+        let x = usize::from((opcode >> 8) & 0xF);
 
         cpu.delay_timer = cpu.v[x];
     }
@@ -31,7 +33,7 @@ impl CpuCore {
     /// Set sound timer = Vx.
     /// ST is set equal to the value of Vx.
     pub(super) fn op_fx18(&mut self, cpu: &mut Cpu, opcode: u16) {
-        let x = ((opcode & 0x0F00) >> 8) as usize;
+        let x = usize::from((opcode >> 8) & 0xF);
 
         cpu.v[x] = cpu.sound_timer;
     }
@@ -40,7 +42,7 @@ impl CpuCore {
     /// Set I = I + Vx.
     /// The values of I and Vx are added, and the results are stored in 'I'.
     pub(super) fn op_fx1e(&mut self, cpu: &mut Cpu, opcode: u16) {
-        let x = ((opcode & 0x0F00) >> 8) as usize;
+        let x = usize::from((opcode >> 8) & 0xF);
 
         cpu.i += cpu.v[x] as u16;
     }
@@ -59,7 +61,20 @@ impl CpuCore {
     /// Store BCD representation of Vx in memory locations I, I+1, and I+2.
     /// The interpreter takes the decimal value of Vx, and places the hundreds digit in memory at
     /// location in I, the tens digit at location I+1, and the ones digit at location I+2.
-    pub(super) fn op_fx33(&mut self, _cpu: &mut Cpu, _opcode: u16) {}
+    pub(super) fn op_fx33(&mut self, cpu: &mut Cpu, opcode: u16) {
+        let x = usize::from((opcode >> 8) & 0xF);
+
+        let bcd = format!("{:03}", cpu.v[x]);
+
+        let b = bcd.chars().nth(0).unwrap().to_digit(10).unwrap() as u8;
+        let c = bcd.chars().nth(1).unwrap().to_digit(10).unwrap() as u8;
+        let d = bcd.chars().nth(2).unwrap().to_digit(10).unwrap() as u8;
+
+
+        cpu.mem[usize::from(cpu.i)] = b;
+        cpu.mem[usize::from(cpu.i + 1)] = c;
+        cpu.mem[usize::from(cpu.i + 2)] = d;
+    }
 
     /// Fx55 - LD [I], Vx
     /// Store registers V0 through Vx in memory starting at location 'I'.
@@ -76,7 +91,7 @@ impl CpuCore {
     /// Read registers V0 through Vx from memory starting at location I.
     /// The interpreter reads values from memory starting at location I into registers V0 through Vx.
     pub(super) fn op_fx65(&mut self, cpu: &mut Cpu, opcode: u16) {
-        let x = usize::from((opcode & 0x0F00) >> 8);
+        let x = usize::from((opcode >> 8) & 0xF);
 
         for idx in 0..(x + 1) {
             cpu.v[idx] = cpu.mem[cpu.i as usize + idx];
@@ -171,7 +186,21 @@ mod tests {
     /// location in I, the tens digit at location I+1, and the ones digit at location I+2.
     #[test]
     fn decode_op_test_fx33() {
-        assert!(false);
+        let mut cpu = Cpu::new();
+        let mut core = CpuCore::new();
+        cpu.v[0x4] = 238; // 0xEE;
+        cpu.i = 0x330;
+        core.decode_opcode(&mut cpu, 0xF433);
+        assert_eq!(cpu.mem[0x330], 2);
+        assert_eq!(cpu.mem[0x331], 3);
+        assert_eq!(cpu.mem[0x332], 8);
+
+        cpu.v[0x4] = 3; // 0xEE;
+        cpu.i = 0x330;
+        core.decode_opcode(&mut cpu, 0xF433);
+        assert_eq!(cpu.mem[0x330], 0);
+        assert_eq!(cpu.mem[0x331], 0);
+        assert_eq!(cpu.mem[0x332], 3);
     }
     /// Fx55 - LD [I], Vx
     /// Store registers V0 through Vx in memory starting at location 'I'.
