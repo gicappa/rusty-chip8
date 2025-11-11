@@ -140,34 +140,34 @@ impl CpuCore {
 
 #[cfg(test)]
 mod tests {
-    // use super::*;
-    // use crate::cpu::Cpu;
-    //
-    // #[test]
-    // fn load_rom_test() {
-    //     let mut cpu = Cpu::new();
-    //     let mut cpu_engine = CpuCore::new(&mut cpu);
-    //
-    //     cpu_engine.load_rom("tests/fixtures/test_opcode.ch8")
-    //         .expect("Error loading fixture files");
-    //
-    //     assert!(
-    //         cpu_engine.cpu.mem[START_ADDRESS..]
-    //             .starts_with(&[0x12, 0x4e, 0xea, 0xac, 0xaa, 0xea, 0xce, 0xaa])
-    //     );
-    // }
-    //
-    // #[test]
-    // fn new_initializes_state() {
-    //     let mut cpu = Cpu::new();
-    //     let cpu_engine = CpuCore::new(&mut cpu);
-    //
-    //     assert_eq!(cpu_engine.cpu.pc, START_ADDRESS as u16);
-    //     assert!(cpu_engine.cpu.mem.iter().all(|&b| b == 0));
-    //     assert!(cpu_engine.cpu.v.iter().all(|&r| r == 0));
-    //     assert_eq!(cpu_engine.cpu.i, 0);
-    //     assert_eq!(cpu_engine.cpu.sp, 0);
-    //     assert!(cpu_engine.cpu.stack.iter().all(|&s| s == 0));
-    //     assert!(cpu_engine.cpu.vram.iter().all(|&p| p == false));
-    // }
+    use super::*;
+    use crate::cpu::Cpu;
+
+    #[test]
+    fn load_rom_test() {
+        let mut cpu = Cpu::new();
+        let mut core = CpuCore::new();
+
+        core.load_rom(&mut cpu, "tests/fixtures/test_opcode.ch8")
+            .expect("Error loading fixture files");
+
+        assert!(
+            cpu.mem[START_ADDRESS..]
+                .starts_with(&[0x12, 0x4e, 0xea, 0xac, 0xaa, 0xea, 0xce, 0xaa])
+        );
+    }
+
+    #[test]
+    fn new_initializes_state() {
+        // TODO update the initial state asserts
+        let cpu = Cpu::new();
+
+        assert_eq!(cpu.pc, START_ADDRESS as u16);
+        assert!(cpu.v.iter().all(|&r| r == 0));
+        assert_eq!(cpu.i, 0);
+        assert_eq!(cpu.sp, 0);
+        assert!(cpu.stack.iter().all(|&s| s == 0));
+        assert!(cpu.vram.iter().all(|&p| p == false));
+        // assert!(cpu.mem.iter().all(|&b| b == 0));
+    }
 }

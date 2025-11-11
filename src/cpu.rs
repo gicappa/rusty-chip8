@@ -12,7 +12,7 @@ pub struct Cpu {
     pub stack: Vec<u16>,
     pub delay_timer: u8,
     pub sound_timer: u8,
-    pub wait_for_key: bool,
+    pub _wait_for_key: bool,
     pub keypad: [bool; 16],
     pub vram: VRAM,
     pub draw_flag: bool,
@@ -20,7 +20,9 @@ pub struct Cpu {
     pub panic: bool,
 }
 
-const FONT: [u8; 80] = [
+pub(crate) const FONT_ADDR: u16 = 0x00;
+pub(crate) const FONT_SIZE: u16 = 5;
+pub(crate) const FONT: [u8; 80] = [
     0xF0, 0x90, 0x90, 0x90, 0xF0,
     0x20, 0x60, 0x20, 0x20, 0x70,
     0xF0, 0x10, 0xF0, 0x80, 0xF0,
@@ -51,7 +53,7 @@ impl Cpu {
             delay_timer: 0,
             sound_timer: 0,
             keypad: [false; 16],
-            wait_for_key: false,
+            _wait_for_key: false,
             vram: [false; WXH],
             draw_flag: true,
             running: true,
@@ -65,7 +67,7 @@ impl Cpu {
 
     pub(crate) fn reset_memory(&mut self) {
         for (i, &byte) in FONT.iter().enumerate() {
-            self.mem[i] = byte;
+            self.mem[usize::from(FONT_ADDR) + i] = byte;
         }
 
         self.mem[80..512].fill(0);
@@ -75,7 +77,7 @@ impl Cpu {
 
 #[cfg(test)]
 mod tests {
-    use crate::cpu::Cpu;
+    use crate::cpu::{Cpu, FONT};
 
     #[test]
     fn test_reset_memory() {
@@ -88,5 +90,9 @@ mod tests {
         assert_eq!(cpu.mem[1], 0x90);
         assert_eq!(cpu.mem[77], 0xF0);
         assert_eq!(cpu.mem[79], 0x80);
+
+        for (i, byte) in FONT.iter().enumerate() {
+            println!("{:08b} - {}", &byte, i);
+        }
     }
 }

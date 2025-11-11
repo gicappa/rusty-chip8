@@ -1,4 +1,4 @@
-use crate::cpu::Cpu;
+use crate::cpu::{Cpu, FONT_ADDR, FONT_SIZE};
 use crate::cpu_core::CpuCore;
 
 impl CpuCore {
@@ -49,8 +49,10 @@ impl CpuCore {
     /// Set I = location of sprite for digit Vx.
     /// The value of I is set to the location for the hexadecimal sprite corresponding to the value
     /// of Vx. See section 2.4, Display, for more information on the Chip-8 hexadecimal font.
-    pub(super) fn op_fx29(&mut self, _cpu: &mut Cpu, _opcode: u16) {
-        
+    pub(super) fn op_fx29(&mut self, cpu: &mut Cpu, opcode: u16) {
+        let x = usize::from((opcode >> 8) & 0xF);
+
+        cpu.i = FONT_ADDR + FONT_SIZE * u16::from(cpu.v[x]);
     }
 
     /// Fx33 - LD B, Vx
@@ -64,7 +66,7 @@ impl CpuCore {
     /// The interpreter copies the values of registers V0 through Vx into memory, starting at
     /// the address in 'I'.
     pub(super) fn op_fx55(&mut self, cpu: &mut Cpu, opcode: u16) {
-        let x = ((opcode & 0x0F00) >> 8) as usize;
+        let x = ((opcode >> 8) & 0xF) as usize;
 
         for idx in 0..(x + 1) {
             cpu.mem[cpu.i as usize + idx] = cpu.v[idx];
@@ -74,7 +76,7 @@ impl CpuCore {
     /// Read registers V0 through Vx from memory starting at location I.
     /// The interpreter reads values from memory starting at location I into registers V0 through Vx.
     pub(super) fn op_fx65(&mut self, cpu: &mut Cpu, opcode: u16) {
-        let x = ((opcode & 0x0F00) >> 8) as usize;
+        let x = usize::from((opcode & 0x0F00) >> 8);
 
         for idx in 0..(x + 1) {
             cpu.v[idx] = cpu.mem[cpu.i as usize + idx];
@@ -84,7 +86,7 @@ impl CpuCore {
 
 #[cfg(test)]
 mod tests {
-    use crate::cpu::Cpu;
+    use crate::cpu::{Cpu, FONT_ADDR};
     use crate::cpu_core::CpuCore;
 
     /// Fx07 - LD Vx, DT
@@ -156,7 +158,12 @@ mod tests {
     /// of Vx. See section 2.4, Display, for more information on the Chip-8 hexadecimal font.
     #[test]
     fn decode_op_test_fx29() {
-        assert!(false);
+        let mut cpu = Cpu::new();
+        let mut core = CpuCore::new();
+        cpu.i = 0x888;
+        cpu.v[0x1] = 0x3;
+        core.decode_opcode(&mut cpu, 0xF129);
+        assert_eq!(cpu.i, FONT_ADDR + 15);
     }
     /// Fx33 - LD B, Vx
     /// Store BCD representation of Vx in memory locations I, I+1, and I+2.

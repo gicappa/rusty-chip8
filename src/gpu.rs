@@ -1,4 +1,3 @@
-use std::ptr::addr_of_mut;
 use crate::config::{H, VRAM, W, WXH};
 use crate::cpu::Cpu;
 use minifb::{Key, Scale, Window, WindowOptions};
