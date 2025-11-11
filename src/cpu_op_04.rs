@@ -8,6 +8,7 @@ impl CpuCore {
     /// Set Vx = delay timer value.
     /// The value of DT is placed into Vx.
     pub(super) fn op_fx07(&mut self, cpu: &mut Cpu, opcode: u16) {
+        
         let x = usize::from((opcode >> 8) & 0xF);
 
         cpu.v[x] = cpu.delay_timer;
@@ -17,7 +18,11 @@ impl CpuCore {
     /// Wait for a key press, store the value of the key in Vx.
     /// All execution stops until a key is pressed, then the value of that key is stored in Vx.
     pub(super) fn op_fx0a(&mut self, cpu: &mut Cpu, opcode: u16) {
-        let x = usize::from((opcode >> 8) & 0xF);
+        let _x = usize::from((opcode >> 8) & 0xF);
+
+        cpu.wait_for_key = true;
+
+
     }
 
     ///Fx15 - LD DT, Vx

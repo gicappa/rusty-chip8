@@ -20,6 +20,7 @@ impl CpuCore {
         cpu.draw_flag = false;
 
         let opcode = self.fetch_opcode(cpu);
+        println!("{:04X}", opcode);
         self.decode_opcode(cpu, opcode);
 
         if cpu.delay_timer > 0 {
@@ -33,7 +34,10 @@ impl CpuCore {
                 println!("beep!");
             }
         }
-        cpu.pc = (cpu.pc + 2) % MEMORY_SIZE as u16;
+
+        if !cpu.wait_for_key {
+            cpu.pc = (cpu.pc + 2) % MEMORY_SIZE as u16;
+        }
     }
 
     fn fetch_opcode(&mut self, cpu: &mut Cpu) -> u16 {

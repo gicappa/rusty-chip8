@@ -62,6 +62,7 @@ impl CpuCore {
                 cpu.vram[vram_ptr + idx] ^= bit != '0';
             }
         }
+        cpu.draw_flag = true;
     }
 
     /// Ex9E - SKP Vx
