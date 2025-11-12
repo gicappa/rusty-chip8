@@ -20,7 +20,11 @@ impl CpuCore {
         cpu.draw_flag = false;
 
         let opcode = self.fetch_opcode(cpu);
-        println!("{:04X}", opcode);
+        print!("{:04X} ", opcode);
+        for (i, x) in cpu.v.iter().enumerate() {
+            print!("v{}={x} ", i);
+        }
+        println!("{:4X}", cpu.i);
         self.decode_opcode(cpu, opcode);
 
         if cpu.delay_timer > 0 {

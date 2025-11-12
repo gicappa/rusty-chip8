@@ -43,9 +43,8 @@ impl CpuCore {
     /// top of the stack. The PC is then set to nnn.
     pub(super) fn op_2nnn(&mut self, cpu: &mut Cpu, opcode: u16) {
         let nnn = opcode & 0x0fff;
-        cpu.sp += 1;
         cpu.stack.push(cpu.pc);
-
+        cpu.sp += 1;
         cpu.pc = nnn;
     }
 
@@ -54,7 +53,7 @@ impl CpuCore {
     /// The interpreter compares register Vx to kk, and if they are equal, increments
     /// the program counter by 2.
     pub(super) fn op_3xkk(&mut self, cpu: &mut Cpu, opcode: u16) {
-        let x = ((opcode & 0x0f00) >> 8) as usize;
+        let x = ((opcode >> 8) & 0xf) as usize;
         let kk = (opcode & 0x00ff) as u8;
 
         if cpu.v[x] == kk {
@@ -67,7 +66,7 @@ impl CpuCore {
     /// The interpreter compares register Vx to kk, and if they are not equal,
     /// increments the program counter by 2.
     pub(super) fn op_4xkk(&mut self, cpu: &mut Cpu, opcode: u16) {
-        let x = ((opcode & 0x0f00) >> 8) as usize;
+        let x = ((opcode >> 8) & 0xf) as usize;
         let kk = (opcode & 0x00ff) as u8;
 
         if cpu.v[x] != kk {
@@ -80,8 +79,8 @@ impl CpuCore {
     /// The interpreter compares register Vx to register Vy, and if they are equal,
     /// increments the program counter by 2.
     pub(super) fn op_5xy0(&mut self, cpu: &mut Cpu, opcode: u16) {
-        let x = ((opcode & 0x0f00) >> 8) as usize;
-        let y = ((opcode & 0x00f0) >> 8) as usize;
+        let x = ((opcode >> 8) & 0xf) as usize;
+        let y = ((opcode >> 4) & 0xf) as usize;
 
         if cpu.v[x] == cpu.v[y] {
             cpu.pc += 2
@@ -91,7 +90,7 @@ impl CpuCore {
     /// Set Vx = kk.
     /// The interpreter puts the value kk into register Vx.
     pub(super) fn op_6xkk(&mut self, cpu: &mut Cpu, opcode: u16) {
-        let x = ((opcode & 0x0f00) >> 8) as usize;
+        let x = ((opcode >> 8) & 0xf) as usize;
         let kk = (opcode & 0x00ff) as u8;
 
         cpu.v[x] = kk;
@@ -101,7 +100,7 @@ impl CpuCore {
     // Set Vx = Vx + kk.
     // Adds the value kk to the value of register Vx, then stores the result in Vx.
     pub(super) fn op_7xkk(&mut self, cpu: &mut Cpu, opcode: u16) {
-        let x = ((opcode & 0x0f00) >> 8) as usize;
+        let x = ((opcode >> 8) & 0xf) as usize;
         let kk = (opcode & 0x00ff) as u8;
 
         cpu.v[x] += kk;
@@ -111,8 +110,8 @@ impl CpuCore {
     /// The values of Vx and Vy are compared, and if they are not equal,
     /// the program counter is increased by 2.
     pub(super) fn op_9xy0(&mut self, cpu: &mut Cpu, opcode: u16) {
-        let x = ((opcode & 0x0f00) >> 8) as usize;
-        let y = ((opcode & 0x00f0) >> 8) as usize;
+        let x = ((opcode >> 8) & 0xf) as usize;
+        let y = ((opcode >> 4) & 0xf) as usize;
 
         if cpu.v[x] != cpu.v[y] {
             cpu.pc += 2

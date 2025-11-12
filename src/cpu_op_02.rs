@@ -51,26 +51,32 @@ impl CpuCore {
     pub(super) fn op_8xy4(&mut self, cpu: &mut Cpu, opcode: u16) {
         let (x, y) = Self::regs_xy(opcode);
 
-        let (sum, carry) = cpu.v[x].overflowing_add(cpu.v[y]);
-        cpu.v[x] = sum;
-        cpu.v[0xF] = if carry { 1 } else { 0 }
+        let sum: usize = (cpu.v[x] + cpu.v[y]) as usize;
+
+        if sum > 255 {
+            cpu.v[0xF] = 1
+        } else {
+            cpu.v[0xF] = 0
+        }
+
+        cpu.v[x] = sum as u8;
     }
 
     /// 8xy5 - SUB Vx, Vy
+    /// Let VX = VX - VY (VF = 00 if VX < VY, VF = 01 if VX >= VY)
     /// Set Vx = Vx - Vy, set VF = NOT borrow.
     /// If Vx > Vy, then VF is set to 1, otherwise 0. Then Vy is subtracted from Vx, and the results
     /// stored in Vx.
     pub(super) fn op_8xy5(&mut self, cpu: &mut Cpu, opcode: u16) {
         let (x, y) = Self::regs_xy(opcode);
 
-        let (diff, carry) = cpu.v[x].overflowing_sub(cpu.v[y]);
-        if carry {
-            cpu.v[x] = cpu.v[y] - cpu.v[x];
-            cpu.v[0xF] = 0;
+        if cpu.v[x] >= cpu.v[y] {
+            cpu.v[0xF] = 1
         } else {
-            cpu.v[x] = diff;
-            cpu.v[0xF] = 1;
+            cpu.v[0xF] = 0
         }
+
+        cpu.v[x] -= cpu.v[y]
     }
 
     /// 8xy6 - SHR Vx {, Vy}
@@ -95,14 +101,13 @@ impl CpuCore {
     pub(super) fn op_8xy7(&mut self, cpu: &mut Cpu, opcode: u16) {
         let (x, y) = Self::regs_xy(opcode);
 
-        let (diff, carry) = cpu.v[y].overflowing_sub(cpu.v[x]);
-        if carry {
-            cpu.v[x] = cpu.v[x] - cpu.v[y];
-            cpu.v[0xF] = 0;
+        if cpu.v[y] >= cpu.v[x] {
+            cpu.v[0xF] = 1
         } else {
-            cpu.v[x] = diff;
-            cpu.v[0xF] = 1;
+            cpu.v[0xF] = 0
         }
+
+        cpu.v[x] = cpu.v[y] - cpu.v[x];
     }
 
     /// 8xyE - SHL Vx {, Vy}
@@ -125,8 +130,8 @@ impl CpuCore {
     pub(super) fn regs_xy(opcode: u16) -> (usize, usize) {
         // Original form: (opcode & 0x0F00) >> 8; (opcode & 0x00F0) >> 4
         // Equivalent: (opcode >> 8) & 0xF; (opcode >> 4) & 0xF
-        let x = ((opcode >> 8) & 0xF) as usize;
-        let y = ((opcode >> 4) & 0xF) as usize;
+        let x = ((opcode >> 8) & 0xf) as usize;
+        let y = ((opcode >> 4) & 0xf) as usize;
         (x, y)
     }
 }

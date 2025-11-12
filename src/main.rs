@@ -24,8 +24,7 @@ fn main() {
     // let mut cpu_debugger = CpuDebugger::new();
 
     core
-        // .load_rom(&mut cpu, "tests/1-chip8-logo.ch8")
-        .load_rom(&mut cpu, "tests/2-ibm-logo.ch8")
+        .load_rom(&mut cpu, "tests/test_opcode.ch8")
         .expect("File not found or not readable");
 
     if !cpu.panic {
