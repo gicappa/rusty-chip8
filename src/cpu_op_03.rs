@@ -43,6 +43,10 @@ impl CpuCore {
     /// to 0. If the sprite is positioned so part of it is outside the coordinates of the display,
     /// it wraps around to the opposite side of the screen. See instruction 8xy3 for more information
     /// on XOR, and section 2.4, Display, for more information on the Chip-8 screen and sprites.
+    ///
+    /// Show n-byte MI pattern at VX-VY coordinates.
+    /// I unchanged. MI pattern is combined with existing display via EXCLUSIVE-OR function.
+    /// VF = 01 if a 1 in MI pattern matches 1 in existing display
     pub(super) fn op_dxyn(&mut self, cpu: &mut Cpu, opcode: u16) {
         let x = ((opcode & 0x0F00) >> 8) as usize;
         let y = ((opcode & 0x00F0) >> 4) as usize;
@@ -59,9 +63,12 @@ impl CpuCore {
             let pixels = format!("{:08b}", cpu.mem[base_mem + j]);
 
             for (idx, bit) in pixels.char_indices() {
+                if bit == '1' && cpu.vram[vram_ptr + idx] == true { cpu.v[0xf] = 1 }
                 cpu.vram[vram_ptr + idx] ^= bit != '0';
             }
         }
+
+
         cpu.draw_flag = true;
     }
 

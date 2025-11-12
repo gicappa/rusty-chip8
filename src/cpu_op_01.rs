@@ -11,7 +11,7 @@ impl CpuCore {
     /// originally implemented. It is ignored by modern interpreters.
     pub(super) fn op_0nnn(&mut self, cpu: &mut Cpu, opcode: u16) {
         let nnn = opcode & 0x0fff;
-        cpu.stack.push(cpu.pc);
+        cpu.stack[usize::from(cpu.sp)] = cpu.pc;
         cpu.sp += 1;
         cpu.pc = nnn;
     }
@@ -20,8 +20,8 @@ impl CpuCore {
     /// The interpreter sets the program counter to the address at the top of the stack
     /// then subtracts 1 from the stack pointer.
     pub(super) fn op_00d4(&mut self, cpu: &mut Cpu, _opcode: u16) {
+        cpu.pc = cpu.stack[usize::from(cpu.sp)];
         cpu.sp -= 1;
-        cpu.pc = cpu.stack.pop().unwrap();
     }
 
     ///00E0 - CLS
@@ -36,8 +36,8 @@ impl CpuCore {
     /// The interpreter sets the program counter to the address at the top of the stack
     /// then subtracts 1 from the stack pointer.
     pub(super) fn op_00ee(&mut self, cpu: &mut Cpu, _opcode: u16) {
+        cpu.pc = cpu.stack[usize::from(cpu.sp)];
         cpu.sp -= 1;
-        cpu.pc = cpu.stack.pop().unwrap();
     }
 
     /// Jump to location nnn.
@@ -45,7 +45,7 @@ impl CpuCore {
     pub(super) fn op_1nnn(&mut self, cpu: &mut Cpu, opcode: u16) {
         let nnn = opcode & 0x0fff;
 
-        cpu.pc = nnn;
+        cpu.pc = nnn - 2;
     }
 
     /// 2nnn - CALL addr
@@ -54,9 +54,9 @@ impl CpuCore {
     /// top of the stack. The PC is then set to nnn.
     pub(super) fn op_2nnn(&mut self, cpu: &mut Cpu, opcode: u16) {
         let nnn = opcode & 0x0fff;
-        cpu.stack.push(cpu.pc);
         cpu.sp += 1;
-        cpu.pc = nnn;
+        cpu.stack[usize::from(cpu.sp)] = cpu.pc;
+        cpu.pc = nnn - 2;
     }
 
     /// 3xkk - SE Vx, byte
@@ -164,7 +164,7 @@ mod tests {
         let mut cpu_core = CpuCore::new();
         cpu.sp = 1;
         cpu.pc = 0x300;
-        cpu.stack.push(0x400);
+        cpu.stack[1] = 0x400;
 
         cpu_core.decode_opcode(&mut cpu, 0x00ee);
         assert_eq!(cpu.sp, 0);
