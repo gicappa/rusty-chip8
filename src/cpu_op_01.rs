@@ -9,8 +9,19 @@ impl CpuCore {
     /// Jump to a machine code routine at nnn.
     /// This instruction is only used on the old computers on which Chip-8 was
     /// originally implemented. It is ignored by modern interpreters.
-    pub(super) fn op_0nnn(&mut self, _cpu: &mut Cpu, _opcode: u16) {
-        // NO-OP Ignored
+    pub(super) fn op_0nnn(&mut self, cpu: &mut Cpu, opcode: u16) {
+        let nnn = opcode & 0x0fff;
+        cpu.stack.push(cpu.pc);
+        cpu.sp += 1;
+        cpu.pc = nnn;
+    }
+    /// 00D4 - RET from a machine language subroutine
+    /// Return from a subroutine.
+    /// The interpreter sets the program counter to the address at the top of the stack
+    /// then subtracts 1 from the stack pointer.
+    pub(super) fn op_00d4(&mut self, cpu: &mut Cpu, _opcode: u16) {
+        cpu.sp -= 1;
+        cpu.pc = cpu.stack.pop().unwrap();
     }
 
     ///00E0 - CLS
@@ -103,7 +114,7 @@ impl CpuCore {
         let x = ((opcode >> 8) & 0xf) as usize;
         let kk = (opcode & 0x00ff) as u8;
 
-        cpu.v[x] += kk;
+        (cpu.v[x], _) = cpu.v[x].overflowing_add(kk);
     }
     /// 9xy0 - SNE Vx, Vy
     /// Skip next instruction if Vx != Vy.

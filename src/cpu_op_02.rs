@@ -51,7 +51,7 @@ impl CpuCore {
     pub(super) fn op_8xy4(&mut self, cpu: &mut Cpu, opcode: u16) {
         let (x, y) = Self::regs_xy(opcode);
 
-        let sum: usize = (cpu.v[x] + cpu.v[y]) as usize;
+        let sum: usize = cpu.v[x] as usize + cpu.v[y] as usize;
 
         if sum > 255 {
             cpu.v[0xF] = 1
@@ -70,13 +70,16 @@ impl CpuCore {
     pub(super) fn op_8xy5(&mut self, cpu: &mut Cpu, opcode: u16) {
         let (x, y) = Self::regs_xy(opcode);
 
-        if cpu.v[x] >= cpu.v[y] {
+        let vx = cpu.v[x] as isize;
+        let vy = cpu.v[y] as isize;
+
+        if vx >= vy {
             cpu.v[0xF] = 1
         } else {
             cpu.v[0xF] = 0
         }
 
-        cpu.v[x] -= cpu.v[y]
+        cpu.v[x] = (vx - vy) as u8
     }
 
     /// 8xy6 - SHR Vx {, Vy}
@@ -101,13 +104,16 @@ impl CpuCore {
     pub(super) fn op_8xy7(&mut self, cpu: &mut Cpu, opcode: u16) {
         let (x, y) = Self::regs_xy(opcode);
 
-        if cpu.v[y] >= cpu.v[x] {
+        let vx = cpu.v[x] as isize;
+        let vy = cpu.v[y] as isize;
+        
+        if vy >= vx {
             cpu.v[0xF] = 1
         } else {
             cpu.v[0xF] = 0
         }
 
-        cpu.v[x] = cpu.v[y] - cpu.v[x];
+        cpu.v[x] = (vy - vx) as u8;
     }
 
     /// 8xyE - SHL Vx {, Vy}

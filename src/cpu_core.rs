@@ -59,6 +59,8 @@ impl CpuCore {
         match opcode {
             // 0x00e0 - CLS Clear display
             0x00e0 => self.op_00e0(cpu, opcode),
+            // 0x00d4 - RET Return from a machine language subroutine.
+            0x00d4 => self.op_00d4(cpu, opcode),
             // 0x00ee - RET Return from a subroutine.
             0x00ee => self.op_00ee(cpu, opcode),
             // 0x0nnn - SYS Ignored (old SYS addr)
