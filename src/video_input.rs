@@ -1,9 +1,10 @@
-use crate::config::{H, W};
+use crate::config::{H, W, WXH};
 use pixels::{Pixels, SurfaceTexture};
+use std::sync::mpsc::Receiver;
 use winit::{
     application::ApplicationHandler,
     event::WindowEvent,
-    event_loop::{ActiveEventLoop, /*ControlFlow,*/ EventLoop},
+    event_loop::{ActiveEventLoop /*ControlFlow,*/},
     window::Window,
 };
 
@@ -13,19 +14,21 @@ const HEIGHT: u32 = H as u32;
 type Error = Box<dyn std::error::Error>;
 type Result<T> = std::result::Result<T, Error>;
 
-#[derive(Default)]
 pub struct VideoInput {
     window: Option<&'static Window>,
     pixels: Option<Pixels<'static>>,
+    vram: [u8; WXH],
+    rx: Option<Receiver<[u8; WXH]>>, // from CPU thread}
 }
 
 impl VideoInput {
-    pub fn start() -> Result<()> {
-        let event_loop = EventLoop::new()?;
-        let mut app = VideoInput::default();
-        event_loop.run_app(&mut app)?;
-
-        Ok(())
+    pub fn new(rx: Receiver<[u8; WXH]>) -> Self {
+        Self {
+            window: None,
+            pixels: None,
+            vram: [0; WXH],
+            rx: Some(rx),
+        }
     }
 }
 
@@ -99,7 +102,7 @@ fn put_pixel(frame: &mut [u8], x: u32, y: u32, r: u8, g: u8, b: u8, a: u8) {
 
     let idx = ((y * WIDTH + x) * 4) as usize;
 
-    frame[idx    ] = r; // R
+    frame[idx] = r; // R
     frame[idx + 1] = g; // G
     frame[idx + 2] = b; // B
     frame[idx + 3] = a; // A
