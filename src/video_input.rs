@@ -76,9 +76,10 @@ impl ApplicationHandler for VideoInput {
 
                     for (i, value) in frame.chunks_exact_mut(4).enumerate() {
                         if self.vram[i] != 0u8 {
-                            value.copy_from_slice(&BIT_OFF);
-                        } else {
                             value.copy_from_slice(&BIT_ON);
+                        } else {
+                            value.copy_from_slice(&BIT_OFF);
+
                         }
                     }
 

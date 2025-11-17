@@ -317,21 +317,18 @@ impl CpuCore {
         // TODO: handle the wrap to the opposite side of the screen
         for j in 0..n {
             let vram_ptr = vx + (vy + j) * W;
+            
+            for i in 0..8 {
+                let mem_bit = (cpu.mem[base_mem + j] >> (7 - i)) & 1 == 1;
+                let vram_bit = cpu.vram[vram_ptr + i] != 0x00;
 
-            cpu.vram[vram_ptr] ^= cpu.mem[base_mem + j];
+                cpu.vram[vram_ptr + i] = if mem_bit ^ vram_bit { 0xFF } else { 0x00 };
 
-            if cpu.vram[vram_ptr] & cpu.mem[base_mem + j] != 0 {
-                cpu.v[0xf] = 1;
+                if mem_bit & vram_bit {
+                    cpu.v[0xf] = 1;
+                }
             }
         }
-        // let mut counter = 0;
-        // for byte in crate::cpu::PANIC_0XID8 {
-        //     for i in 0..8 {
-        //         let bit = (byte >> (7 - i)) & 1;
-        //         self.vram[counter + i] = if bit == 1 { 0xFF } else { 0x00 };
-        //     }
-        //     counter += 8;
-        // }
 
         // 10010010 XOR
         // 00011001
