@@ -11,14 +11,14 @@ use winit::{
 const WIDTH: u32 = W as u32;
 const HEIGHT: u32 = H as u32;
 
-type Error = Box<dyn std::error::Error>;
-type Result<T> = std::result::Result<T, Error>;
+type _Error = Box<dyn std::error::Error>;
+type _Result<T> = Result<T, _Error>;
 
 pub struct VideoInput {
     window: Option<&'static Window>,
     pixels: Option<Pixels<'static>>,
     vram: [u8; WXH],
-    rx: Option<Receiver<[u8; WXH]>>, // from CPU thread}
+    rx: Option<Receiver<[u8; WXH]>>,
 }
 
 impl VideoInput {
@@ -31,6 +31,11 @@ impl VideoInput {
         }
     }
 }
+const BIT_ON: [u8; 4] = [0xF4, 0xDE, 0xCB, 0xFF];
+const _BIT_ON_DARK: [u8; 4] = [0xB0, 0x71, 0x54, 0xFF];
+const BIT_OFF: [u8; 4] = [0x3a, 0x23, 0x17, 0xFF];
+const _BIT_OFF_DARK: [u8; 4] = [0x31, 0x1f, 0x13, 0xFF];
+const _BIT_ON_MEDIUM: [u8; 4] = [0xA8, 0x7E, 0x62, 0xFF];
 
 impl ApplicationHandler for VideoInput {
     fn resumed(&mut self, event_loop: &ActiveEventLoop) {
@@ -60,17 +65,22 @@ impl ApplicationHandler for VideoInput {
             }
 
             WindowEvent::RedrawRequested => {
+                if let Some(rx) = &self.rx {
+                    while let Ok(new_vram) = rx.try_recv() {
+                        self.vram = new_vram;
+                    }
+                }
+
                 if let Some(pixels) = &mut self.pixels {
                     let frame = pixels.frame_mut();
 
-                    for spot in frame.chunks_exact_mut(4) {
-                        spot[0] = 0x3a; // R
-                        spot[1] = 0x23; // G
-                        spot[2] = 0x17; // B
-                        spot[3] = 0xFF; // A
+                    for (i, value) in frame.chunks_exact_mut(4).enumerate() {
+                        if self.vram[i] != 0u8 {
+                            value.copy_from_slice(&BIT_OFF);
+                        } else {
+                            value.copy_from_slice(&BIT_ON);
+                        }
                     }
-
-                    put_pixel(frame, 10, 5, 0xFF, 0xFF, 0xFF, 0xFF);
 
                     pixels.render().unwrap();
                 }
@@ -87,23 +97,4 @@ impl ApplicationHandler for VideoInput {
     fn about_to_wait(&mut self, _: &ActiveEventLoop) {
         self.window.expect("Bug - Window should exist").request_redraw();
     }
-
-    //	#b07154	(176,113,84)
-    // #f4decb	(244,222,203)
-    // #a87e62	(168,126,98)
-    // #3a2317	(58,35,23)
-    // #311f13	(49,31,19)
-}
-fn put_pixel(frame: &mut [u8], x: u32, y: u32, r: u8, g: u8, b: u8, a: u8) {
-    // Make sure we don't go out of bounds
-    if x >= WIDTH || y >= HEIGHT {
-        return;
-    }
-
-    let idx = ((y * WIDTH + x) * 4) as usize;
-
-    frame[idx] = r; // R
-    frame[idx + 1] = g; // G
-    frame[idx + 2] = b; // B
-    frame[idx + 3] = a; // A
 }

@@ -1,36 +1,42 @@
+use crate::config::WXH;
 use crate::cpu::Cpu;
 use std::process::exit;
+use std::sync::mpsc::Sender;
 use std::{fs, io};
 
 pub(crate) const MEMORY_SIZE: usize = 4096;
 pub(crate) const START_ADDRESS: usize = 0x200;
 
-pub struct CpuCore {}
+pub struct CpuCore {
+    tx: Option<Sender<[u8; WXH]>>,
+}
 
 impl CpuCore {
-    pub(crate) fn new() -> Self {
-        Self {}
+    pub(crate) fn new_tx(tx: Option<Sender<[u8; WXH]>>) -> Self {
+        Self {
+            tx
+        }
     }
 
     pub fn tick(&mut self, cpu: &mut Cpu) {
-        if !cpu.panic {
-            return;
-        }
-
         cpu.draw_flag = false;
 
         let opcode = self.fetch_opcode(cpu);
         self.decode_opcode(cpu, opcode);
 
-        print!("{:04X} ", opcode);
-        print!("{:04X} ", cpu.pc);
-        print!("{} ", cpu.sp);
-        print!("{:04X} - regs:", cpu.i);
-
-        for x in cpu.v {
-            print!("{x} ");
+        if cpu.draw_flag {
+            self.tx.as_ref().map(|x| { x.send(cpu.vram) });
         }
-        println!();
+
+        // print!("{:04X} ", opcode);
+        // print!("{:04X} ", cpu.pc);
+        // print!("{} ", cpu.sp);
+        // print!("{:04X} - regs:", cpu.i);
+        //
+        // for x in cpu.v {
+        //     print!("{x} ");
+        // }
+        // println!();
 
         if cpu.delay_timer > 0 {
             cpu.delay_timer -= 1;
@@ -161,7 +167,7 @@ mod tests {
     #[test]
     fn load_rom_test() {
         let mut cpu = Cpu::new();
-        let mut core = CpuCore::new();
+        let mut core = CpuCore::new_tx(None);
 
         core.load_rom(&mut cpu, "tests/fixtures/test_opcode.ch8")
             .expect("Error loading fixture files");
@@ -182,7 +188,7 @@ mod tests {
         assert_eq!(cpu.i, 0);
         assert_eq!(cpu.sp, 0);
         assert!(cpu.stack.iter().all(|&s| s == 0));
-        assert!(cpu.vram.iter().all(|&p| p == false));
+        assert!(cpu.vram.iter().all(|&p| p == 0));
         // assert!(cpu.mem.iter().all(|&b| b == 0));
     }
 }
