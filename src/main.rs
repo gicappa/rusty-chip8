@@ -63,9 +63,5 @@ fn run_cpu_thread(tx: Sender<[u8; WXH]>) {
         clock.stop_and_wait();
     }
 
-    if !cpu.panic {
-        // panic
-    }
-
     // cpu_debugger.quit().unwrap();
 }

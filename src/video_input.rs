@@ -39,12 +39,14 @@ const _BIT_ON_MEDIUM: [u8; 4] = [0xA8, 0x7E, 0x62, 0xFF];
 
 impl ApplicationHandler for VideoInput {
     fn resumed(&mut self, event_loop: &ActiveEventLoop) {
-        let window = event_loop.create_window(
-            Window::default_attributes()
-                .with_title("0xID8")
-                .with_resizable(false)
-                .with_inner_size(winit::dpi::LogicalSize::new(640.0, 320.0))
-        ).unwrap();
+        let window = event_loop
+            .create_window(
+                Window::default_attributes()
+                    .with_title("0xID8")
+                    .with_resizable(false)
+                    .with_inner_size(winit::dpi::LogicalSize::new(640.0, 320.0)),
+            )
+            .unwrap();
 
         let size = window.inner_size();
         let window_ref: &'static Window = Box::leak(Box::new(window));
@@ -58,37 +60,19 @@ impl ApplicationHandler for VideoInput {
         println!("Scale factor : {}", scale_factor);
     }
 
-    fn window_event(&mut self, event_loop: &ActiveEventLoop, _: winit::window::WindowId, event: WindowEvent) {
+    fn window_event(
+        &mut self,
+        event_loop: &ActiveEventLoop,
+        _: winit::window::WindowId,
+        event: WindowEvent,
+    ) {
         match event {
             WindowEvent::CloseRequested => {
                 event_loop.exit();
             }
 
             WindowEvent::RedrawRequested => {
-                if let Some(rx) = &self.rx {
-                    while let Ok(new_vram) = rx.try_recv() {
-                        self.vram = new_vram;
-                    }
-                }
-
-                if let Some(pixels) = &mut self.pixels {
-                    let frame = pixels.frame_mut();
-
-                    for (i, value) in frame.chunks_exact_mut(4).enumerate() {
-                        if self.vram[i] != 0u8 {
-                            value.copy_from_slice(&BIT_ON);
-                        } else {
-                            value.copy_from_slice(&BIT_OFF);
-
-                        }
-                    }
-
-                    pixels.render().unwrap();
-                }
-
-                if let Some(window) = &self.window {
-                    window.request_redraw();
-                }
+                self.redraw_requested();
             }
 
             _ => {}
@@ -96,6 +80,36 @@ impl ApplicationHandler for VideoInput {
     }
 
     fn about_to_wait(&mut self, _: &ActiveEventLoop) {
-        self.window.expect("Bug - Window should exist").request_redraw();
+        self.window
+            .expect("Bug - Window should exist")
+            .request_redraw();
+    }
+}
+
+impl VideoInput {
+    fn redraw_requested(&mut self) {
+        if let Some(rx) = &self.rx {
+            while let Ok(new_vram) = rx.try_recv() {
+                self.vram = new_vram;
+            }
+        }
+
+        if let Some(pixels) = &mut self.pixels {
+            let frame = pixels.frame_mut();
+
+            for (i, value) in frame.chunks_exact_mut(4).enumerate() {
+                if self.vram[i] != 0u8 {
+                    value.copy_from_slice(&BIT_ON);
+                } else {
+                    value.copy_from_slice(&BIT_OFF);
+                }
+            }
+
+            pixels.render().unwrap();
+        }
+
+        if let Some(window) = &self.window {
+            window.request_redraw();
+        }
     }
 }
