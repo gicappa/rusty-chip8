@@ -1,7 +1,7 @@
 use std::thread::sleep;
 use std::time::{Duration, Instant};
 
-pub const INTERVAL: Duration = Duration::from_micros(16_666);
+pub const INTERVAL: Duration = Duration::from_micros(1_666);
 
 pub struct Clock {
     start_time: Instant,
