@@ -47,11 +47,11 @@ fn run_cpu_thread(tx: Sender<[u8; WXH]>) {
     let mut cpu = Cpu::new();
     let mut core = CpuCore::new_tx(Some(tx));
 
-    args.rom_file.map(|r| {
-        core
-            .load_rom(&mut cpu, &r)
-            .expect(&format!("File {} not found or not readable", &r));
-    });
+    match args.rom_file  {
+        None =>  cpu.panic(),
+        Some(r) => cpu.load_rom(&r)
+            .expect(&format!("File {} not found or not readable", &r))
+    }
 
     // let mut cpu_debugger = CpuDebugger::new();
     let mut clock = Clock::new();

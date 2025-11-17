@@ -1,8 +1,6 @@
 use crate::config::WXH;
 use crate::cpu::Cpu;
-use std::process::exit;
 use std::sync::mpsc::Sender;
-use std::{fs, io};
 
 pub(crate) const MEMORY_SIZE: usize = 4096;
 pub(crate) const START_ADDRESS: usize = 0x200;
@@ -137,26 +135,6 @@ impl CpuCore {
             },
         }
     }
-
-    #[allow(dead_code)]
-    pub fn load_rom(&mut self, cpu: &mut Cpu, filename: &str) -> Result<(), io::Error> {
-        let rom_data = fs::read(filename)?;
-
-        for (i, &byte) in rom_data.iter().enumerate() {
-            if START_ADDRESS + i >= MEMORY_SIZE {
-                eprintln!(
-                    "Buffer overflow.\nThe file is overflowing the available memory\nExiting"
-                );
-                exit(1);
-            }
-
-            cpu.mem[START_ADDRESS + i] = byte;
-        }
-
-        cpu.panic = true;
-
-        Ok(())
-    }
 }
 
 #[cfg(test)]
@@ -167,9 +145,8 @@ mod tests {
     #[test]
     fn load_rom_test() {
         let mut cpu = Cpu::new();
-        let mut core = CpuCore::new_tx(None);
 
-        core.load_rom(&mut cpu, "tests/fixtures/test_opcode.ch8")
+        cpu.load_rom("tests/fixtures/test_opcode.ch8")
             .expect("Error loading fixture files");
 
         assert!(

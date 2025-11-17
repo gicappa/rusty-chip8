@@ -1,3 +1,5 @@
+use std::{fs, io};
+use std::process::exit;
 use crate::config::WXH;
 
 pub(crate) const MEMORY_SIZE: usize = 4096;
@@ -96,7 +98,6 @@ impl Cpu {
         };
 
         s.reset_memory();
-        s.panic();
         s
     }
 
@@ -117,7 +118,29 @@ impl Cpu {
             }
             counter += 8;
         }
+        self.panic = true;
     }
+
+    #[allow(dead_code)]
+    pub fn load_rom(&mut self, filename: &str) -> Result<(), io::Error> {
+        let rom_data = fs::read(filename)?;
+
+        for (i, &byte) in rom_data.iter().enumerate() {
+            if crate::cpu_core::START_ADDRESS + i >= crate::cpu_core::MEMORY_SIZE {
+                eprintln!(
+                    "Buffer overflow.\nThe file is overflowing the available memory\nExiting"
+                );
+                exit(1);
+            }
+
+            self.mem[crate::cpu_core::START_ADDRESS + i] = byte;
+        }
+
+        self.panic = false;
+
+        Ok(())
+    }
+
 }
 
 
