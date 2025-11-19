@@ -10,7 +10,7 @@ pub struct CpuCore {
 }
 
 impl CpuCore {
-    pub(crate) fn new_tx(tx: Option<Sender<[u8; WXH]>>) -> Self {
+    pub(crate) fn new(tx: Option<Sender<[u8; WXH]>>) -> Self {
         Self {
             tx
         }

@@ -481,7 +481,7 @@ mod tests {
     #[test]
     fn decode_op_test_0nnn() {
         let mut cpu = Cpu::new();
-        let mut cpu_core = CpuCore::new_tx(None);
+        let mut cpu_core = CpuCore::new(None);
 
         cpu_core.decode_opcode(&mut cpu, 0x0234);
         assert_eq!(cpu.pc, 0x0234);
@@ -490,7 +490,7 @@ mod tests {
     #[test]
     fn decode_op_test_00e0() {
         let mut cpu = Cpu::new();
-        let mut cpu_core = CpuCore::new_tx(None);
+        let mut cpu_core = CpuCore::new(None);
 
         cpu_core.decode_opcode(&mut cpu, 0x00e0);
         // TODO TESTS
@@ -502,7 +502,7 @@ mod tests {
     #[test]
     fn decode_op_test_00ee() {
         let mut cpu = Cpu::new();
-        let mut cpu_core = CpuCore::new_tx(None);
+        let mut cpu_core = CpuCore::new(None);
 
         cpu.sp = 1;
         cpu.pc = 0x300;
@@ -514,7 +514,7 @@ mod tests {
     #[test]
     fn decode_op_test_1nnn() {
         let mut cpu = Cpu::new();
-        let mut cpu_core = CpuCore::new_tx(None);
+        let mut cpu_core = CpuCore::new(None);
 
         cpu_core.decode_opcode(&mut cpu, 0x1234);
         assert_eq!(cpu.pc, 0x234 - 2);
@@ -522,7 +522,7 @@ mod tests {
     #[test]
     fn decode_op_test_2nnn() {
         let mut cpu = Cpu::new();
-        let mut cpu_core = CpuCore::new_tx(None);
+        let mut cpu_core = CpuCore::new(None);
 
         cpu.pc = 0x300;
         cpu_core.decode_opcode(&mut cpu, 0x2345);
@@ -533,7 +533,7 @@ mod tests {
     #[test]
     fn decode_op_test_op_3xkk_x_equals_kk() {
         let mut cpu = Cpu::new();
-        let mut cpu_core = CpuCore::new_tx(None);
+        let mut cpu_core = CpuCore::new(None);
 
         cpu.pc = 0x300;
         cpu.v[4] = 0x05;
@@ -543,7 +543,7 @@ mod tests {
     #[test]
     fn decode_op_test_op_3xkk_x_not_equals_kk() {
         let mut cpu = Cpu::new();
-        let mut cpu_core = CpuCore::new_tx(None);
+        let mut cpu_core = CpuCore::new(None);
 
         cpu.pc = 0x300;
         cpu.v[4] = 0x05;
@@ -553,7 +553,7 @@ mod tests {
     #[test]
     fn decode_op_test_op_4xkk_x_equals_kk() {
         let mut cpu = Cpu::new();
-        let mut cpu_core = CpuCore::new_tx(None);
+        let mut cpu_core = CpuCore::new(None);
 
         cpu.pc = 0x300;
         cpu.v[4] = 0x05;
@@ -563,7 +563,7 @@ mod tests {
     #[test]
     fn decode_op_test_op_4xkk_x_not_equals_kk() {
         let mut cpu = Cpu::new();
-        let mut cpu_core = CpuCore::new_tx(None);
+        let mut cpu_core = CpuCore::new(None);
 
         cpu.pc = 0x300;
         cpu.v[4] = 0x05;
@@ -573,7 +573,7 @@ mod tests {
     #[test]
     fn decode_op_test_op_5xy0_vx_equals_vy() {
         let mut cpu = Cpu::new();
-        let mut cpu_core = CpuCore::new_tx(None);
+        let mut cpu_core = CpuCore::new(None);
 
         cpu.pc = 0x300;
         cpu.v[4] = 0x05;
@@ -584,7 +584,7 @@ mod tests {
     #[test]
     fn decode_op_test_op_5xy0_vx_not_equals_vy() {
         let mut cpu = Cpu::new();
-        let mut cpu_core = CpuCore::new_tx(None);
+        let mut cpu_core = CpuCore::new(None);
 
         cpu.pc = 0x300;
         cpu.v[4] = 0x05;
@@ -595,7 +595,7 @@ mod tests {
     #[test]
     fn decode_op_test_op_6xkk() {
         let mut cpu = Cpu::new();
-        let mut cpu_core = CpuCore::new_tx(None);
+        let mut cpu_core = CpuCore::new(None);
 
         cpu.v[4] = 0x05;
         cpu_core.decode_opcode(&mut cpu, 0x6483);
@@ -604,7 +604,7 @@ mod tests {
     #[test]
     fn decode_op_test_op_7xkk() {
         let mut cpu = Cpu::new();
-        let mut cpu_core = CpuCore::new_tx(None);
+        let mut cpu_core = CpuCore::new(None);
 
         cpu.v[4] = 0x05;
         cpu_core.decode_opcode(&mut cpu, 0x7483);
@@ -613,7 +613,7 @@ mod tests {
     #[test]
     fn decode_op_test_op_9xy0_vx_equals_vy() {
         let mut cpu = Cpu::new();
-        let mut cpu_core = CpuCore::new_tx(None);
+        let mut cpu_core = CpuCore::new(None);
 
         cpu.pc = 0x300;
         cpu.v[4] = 0x05;
@@ -625,7 +625,7 @@ mod tests {
     #[test]
     fn decode_op_test_op_9xy0_vx_not_equals_vy() {
         let mut cpu = Cpu::new();
-        let mut cpu_core = CpuCore::new_tx(None);
+        let mut cpu_core = CpuCore::new(None);
 
         cpu.pc = 0x300;
         cpu.v[4] = 0x05;
@@ -646,7 +646,7 @@ mod tests {
     #[test]
     fn decode_op_test_8xy0() {
         let mut cpu = Cpu::new();
-        let mut cpu_core = CpuCore::new_tx(None);
+        let mut cpu_core = CpuCore::new(None);
 
         cpu.v[3] = 0x08;
         cpu.v[4] = 0x10;
@@ -658,7 +658,7 @@ mod tests {
     #[test]
     fn decode_op_test_8xy1() {
         let mut cpu = Cpu::new();
-        let mut cpu_core = CpuCore::new_tx(None);
+        let mut cpu_core = CpuCore::new(None);
 
         cpu.v[2] = 0x40;
         cpu.v[3] = 0xA8;
@@ -668,7 +668,7 @@ mod tests {
     #[test]
     fn decode_op_test_8xy2() {
         let mut cpu = Cpu::new();
-        let mut cpu_core = CpuCore::new_tx(None);
+        let mut cpu_core = CpuCore::new(None);
 
         cpu.v[2] = 0xE8;
         cpu.v[3] = 0x44;
@@ -678,7 +678,7 @@ mod tests {
     #[test]
     fn decode_op_test_8xy3() {
         let mut cpu = Cpu::new();
-        let mut cpu_core = CpuCore::new_tx(None);
+        let mut cpu_core = CpuCore::new(None);
 
         cpu.v[5] = 0xE8;
         cpu.v[6] = 0x56;
@@ -688,7 +688,7 @@ mod tests {
     #[test]
     fn decode_op_test_8xy4_no_carry() {
         let mut cpu = Cpu::new();
-        let mut cpu_core = CpuCore::new_tx(None);
+        let mut cpu_core = CpuCore::new(None);
 
         cpu.v[5] = 0x08;
         cpu.v[6] = 0x56;
@@ -700,7 +700,7 @@ mod tests {
     #[test]
     fn decode_op_test_8xy4_with_carry() {
         let mut cpu = Cpu::new();
-        let mut cpu_core = CpuCore::new_tx(None);
+        let mut cpu_core = CpuCore::new(None);
 
         cpu.v[5] = 0xFF;
         cpu.v[6] = 0x04;
@@ -712,7 +712,7 @@ mod tests {
     #[test]
     fn decode_op_test_8xy5_with_carry() {
         let mut cpu = Cpu::new();
-        let mut cpu_core = CpuCore::new_tx(None);
+        let mut cpu_core = CpuCore::new(None);
 
         cpu.v[5] = 0x5F;
         cpu.v[6] = 0x14;
@@ -724,7 +724,7 @@ mod tests {
     #[test]
     fn decode_op_test_8xy5_no_carry() {
         let mut cpu = Cpu::new();
-        let mut cpu_core = CpuCore::new_tx(None);
+        let mut cpu_core = CpuCore::new(None);
 
         cpu.v[5] = 0x14;
         cpu.v[6] = 0x5F;
@@ -736,7 +736,7 @@ mod tests {
     #[test]
     fn decode_op_test_8xy6_lsb_1() {
         let mut cpu = Cpu::new();
-        let mut cpu_core = CpuCore::new_tx(None);
+        let mut cpu_core = CpuCore::new(None);
 
         cpu.v[5] = 0xEE;
         cpu.v[6] = 0x5F;
@@ -749,7 +749,7 @@ mod tests {
     #[test]
     fn decode_op_test_8xy6_lsb_0() {
         let mut cpu = Cpu::new();
-        let mut cpu_core = CpuCore::new_tx(None);
+        let mut cpu_core = CpuCore::new(None);
 
         cpu.v[5] = 0xE0;
         cpu.v[6] = 0x34;
@@ -762,7 +762,7 @@ mod tests {
     #[test]
     fn decode_op_test_8xy7_with_carry() {
         let mut cpu = Cpu::new();
-        let mut cpu_core = CpuCore::new_tx(None);
+        let mut cpu_core = CpuCore::new(None);
         cpu.v[5] = 0x14;
         cpu.v[6] = 0x5F;
         cpu_core.decode_opcode(&mut cpu, 0x8567);
@@ -773,7 +773,7 @@ mod tests {
     #[test]
     fn decode_op_test_8xy7_no_carry() {
         let mut cpu = Cpu::new();
-        let mut cpu_core = CpuCore::new_tx(None);
+        let mut cpu_core = CpuCore::new(None);
 
         cpu.v[5] = 0x14;
         cpu.v[6] = 0x5F;
@@ -785,7 +785,7 @@ mod tests {
     #[test]
     fn decode_op_test_8xye_lsb_0() {
         let mut cpu = Cpu::new();
-        let mut cpu_core = CpuCore::new_tx(None);
+        let mut cpu_core = CpuCore::new(None);
 
         cpu.v[5] = 0x81;
         cpu.v[6] = 0x5F;
@@ -798,7 +798,7 @@ mod tests {
     #[test]
     fn decode_op_test_8xye_lsb_1() {
         let mut cpu = Cpu::new();
-        let mut cpu_core = CpuCore::new_tx(None);
+        let mut cpu_core = CpuCore::new(None);
 
         cpu.v[5] = 0x77;
         cpu.v[6] = 0x5F;
@@ -810,7 +810,7 @@ mod tests {
     #[test]
     fn decode_op_test_annn() {
         let mut cpu = Cpu::new();
-        let mut cpu_core = CpuCore::new_tx(None);
+        let mut cpu_core = CpuCore::new(None);
 
         cpu.i = 0x444;
         cpu_core.decode_opcode(&mut cpu, 0xA555);
@@ -819,7 +819,7 @@ mod tests {
     #[test]
     fn decode_op_test_bnnn() {
         let mut cpu = Cpu::new();
-        let mut cpu_core = CpuCore::new_tx(None);
+        let mut cpu_core = CpuCore::new(None);
 
         cpu.pc = 0x400;
         cpu.v[0] = 0x10;
@@ -829,7 +829,7 @@ mod tests {
     #[test]
     fn decode_op_test_cxkk_and_0() {
         let mut cpu = Cpu::new();
-        let mut cpu_core = CpuCore::new_tx(None);
+        let mut cpu_core = CpuCore::new(None);
 
         cpu.v[5] = 0x77;
         for _ in 0..5 {
@@ -840,7 +840,7 @@ mod tests {
     #[test]
     fn decode_op_test_cxkk_rnd() {
         let mut cpu = Cpu::new();
-        let mut cpu_core = CpuCore::new_tx(None);
+        let mut cpu_core = CpuCore::new(None);
 
         cpu.v[5] = 0x77;
         let mut res: Vec<u8> = Vec::new();
@@ -862,7 +862,7 @@ mod tests {
     #[test]
     fn decode_op_test_dxyn() {
         let mut cpu = Cpu::new();
-        let mut cpu_core = CpuCore::new_tx(None);
+        let mut cpu_core = CpuCore::new(None);
 
         cpu.i = 0x400;
         cpu.mem[0x400] = 0x01;
@@ -899,7 +899,7 @@ mod tests {
     #[test]
     fn decode_op_test_fx07() {
         let mut cpu = Cpu::new();
-        let mut core = CpuCore::new_tx(None);
+        let mut core = CpuCore::new(None);
 
         cpu.delay_timer = 123u8;
         core.decode_opcode(&mut cpu, 0xFA07);
@@ -918,7 +918,7 @@ mod tests {
     #[test]
     fn decode_op_test_fx15() {
         let mut cpu = Cpu::new();
-        let mut core = CpuCore::new_tx(None);
+        let mut core = CpuCore::new(None);
 
         cpu.v[0xB] = 34u8;
         core.decode_opcode(&mut cpu, 0xFB15);
@@ -930,7 +930,7 @@ mod tests {
     #[test]
     fn decode_op_test_fx18() {
         let mut cpu = Cpu::new();
-        let mut core = CpuCore::new_tx(None);
+        let mut core = CpuCore::new(None);
 
         cpu.sound_timer = 13u8;
         core.decode_opcode(&mut cpu, 0xF218);
@@ -942,7 +942,7 @@ mod tests {
     #[test]
     fn decode_op_test_fx1e() {
         let mut cpu = Cpu::new();
-        let mut core = CpuCore::new_tx(None);
+        let mut core = CpuCore::new(None);
 
         cpu.i = 0x402;
         cpu.v[0x3] = 0x2A;
@@ -956,7 +956,7 @@ mod tests {
     #[test]
     fn decode_op_test_fx29() {
         let mut cpu = Cpu::new();
-        let mut core = CpuCore::new_tx(None);
+        let mut core = CpuCore::new(None);
 
         cpu.i = 0x888;
         cpu.v[0x1] = 0x3;
@@ -970,7 +970,7 @@ mod tests {
     #[test]
     fn decode_op_test_fx33() {
         let mut cpu = Cpu::new();
-        let mut core = CpuCore::new_tx(None);
+        let mut core = CpuCore::new(None);
 
         cpu.v[0x4] = 238; // 0xEE;
         cpu.i = 0x330;
@@ -993,7 +993,7 @@ mod tests {
     #[test]
     fn decode_op_test_fx55() {
         let mut cpu = Cpu::new();
-        let mut core = CpuCore::new_tx(None);
+        let mut core = CpuCore::new(None);
 
         cpu.i = 0x502;
         for idx in 0..7 {
@@ -1012,7 +1012,7 @@ mod tests {
     #[test]
     fn decode_op_test_fx65() {
         let mut cpu = Cpu::new();
-        let mut core = CpuCore::new_tx(None);
+        let mut core = CpuCore::new(None);
 
         cpu.i = 0x602;
         for idx in 0..9 {
