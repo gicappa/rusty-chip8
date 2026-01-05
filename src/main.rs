@@ -18,11 +18,6 @@ use std::sync::mpsc;
 use std::sync::mpsc::Sender;
 use winit::event_loop::EventLoop;
 
-enum Msg {
-    UpdateFrame([u8; WXH]),
-    KeyPressed(u8),
-}
-
 #[derive(Parser, Debug)]
 #[command(name = "oxide", version, about = "A Chip8 Emulator written in Rust")]
 struct Args {
