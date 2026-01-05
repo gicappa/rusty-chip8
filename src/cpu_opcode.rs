@@ -8,7 +8,11 @@ impl CpuCore {
     /// Jump to a machine code routine at nnn.
     /// This instruction is only used on the old computers on which Chip-8 was
     /// originally implemented. It is ignored by modern interpreters.
-    pub(super) fn op_0nnn(&mut self, cpu: &mut Cpu, _opcode: u16) {
+    pub(super) fn op_0nnn(&mut self, cpu: &mut Cpu, opcode: u16) {
+        let nnn = opcode & 0x0fff;
+
+        cpu.pc = nnn;
+
         cpu.wait_for_key = true;
         cpu.draw_flag = true;
     }
@@ -485,7 +489,7 @@ mod tests {
 
         cpu_core.decode_opcode(&mut cpu, 0x0234);
         assert_eq!(cpu.pc, 0x0234);
-        assert_eq!(cpu.sp, 1);
+        assert_eq!(cpu.sp, 0);
     }
     #[test]
     fn decode_op_test_00e0() {

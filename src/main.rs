@@ -33,7 +33,8 @@ fn main() {
         run_cpu_thread(tx);
     });
 
-    event_loop.run_app(&mut app).expect("TODO: panic message");
+    event_loop.run_app(&mut app)
+        .expect("TODO: panic message");
 }
 
 fn run_cpu_thread(tx: Sender<[u8; WXH]>) {
